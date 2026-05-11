@@ -1,0 +1,90 @@
+name: Backend CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'server/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'server/**'
+
+jobs:
+  test:
+    name: Run Unit Tests
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_DB: family_medical_test_db
+          POSTGRESS_PASWORD: password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        
+    steps:
+        - name: Checkout Code
+          uses: actions/checkout@v4
+        - name: Set up Python 3.13
+          uses: actions/setup-python@v5
+          with:
+            python-version: '3.13'
+            cache: 'pip'
+        - name: Install Dependencies
+          run: |
+            cd server
+            python -m pip install --upgrade pip
+            pip install -r requirements.txt
+            pip install pytest httpx
+        - name: Run pytest
+          env: 
+            DATABASE_URL: postgresql://postgres:password@localhost:5432/family_health_test_db
+            GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          run:
+            cd server
+            pytest
+
+  deploy:
+    name: Deploy to GCP VM
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: SSH Deploy Command
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.VM_IP }}
+          username: ${{ secrets.VM_USERNAME }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          script: |
+            cd ~/grow-with-google-team/server
+            mkdir -p logs
+
+            echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" > .env
+            echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
+            echo "ENV=${{ secrets.ENV }}" >> .env
+            echo "GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }}" >> .env
+
+
+            git pull origin main
+            source .venv/bin/activate
+            pip install -r requirements.txt
+            alembic upgrade head
+            pm2 restart health-api || pm2 start "uvicorn app.main:app --host 0.0.0.0 --port 8000" --name health-api --error ./logs/server.log --output ./logs/uvicorn.log
+            pm2 save
+  
+
+
+
+
+
+      
+
