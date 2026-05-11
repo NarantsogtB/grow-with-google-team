@@ -23,6 +23,10 @@ jobs:
   test-server:
     name: Test Server
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: sqlite:///./test.db
+      JWT_SECRET: test-secret
+      ENV: test
     defaults:
       run:
         working-directory: server
