@@ -2,8 +2,8 @@ from typing import Annotated
 from fastapi import Depends
 from sqlalchemy.orm import Session, declarative_base, sessionmaker
 from sqlalchemy import create_engine
-from utils.logger import get_logger
-from config import settings
+from app.utils.logger import get_logger
+from app.config import settings
 
 logger = get_logger("database")
 
