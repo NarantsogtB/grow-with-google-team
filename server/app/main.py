@@ -15,6 +15,6 @@ async def lifespan(_app: FastAPI):
 
 app=FastAPI(title="Family medical Core API", lifespan=lifespan)
 
-@app.get("/api")
+@app.get("/health")
 def helth_check():
     return {"message":"server is running", "status":"online", "version":"v1"} 
