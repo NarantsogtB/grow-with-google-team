@@ -1,0 +1,45 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+
+  deploy:
+    name: Deploy to GCP VM
+    runs-on: ubuntu-latest
+    needs: [ci]
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VM_IP }}
+          username: ${{ secrets.VM_USERNAME }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          script: |
+            cd ~/grow-with-google-team
+            git pull origin main
+
+            # Server
+            cd server
+            mkdir -p logs
+            echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" > .env
+            echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
+            echo "ENV=${{ secrets.ENV }}" >> .env
+            echo "GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }}" >> .env
+            source .venv/bin/activate
+            pip install -r requirements.txt
+            alembic upgrade head
+            pm2 restart health-api || pm2 start "uvicorn app.main:app --host 0.0.0.0 --port 8000" --name health-api --error ./logs/server.log --output ./logs/uvicorn.log
+            pm2 save
+            cd ..
+
+            # Client
+            cd client
+            bun install
+            bun run build
+            pm2 restart nextjs || pm2 start "bun run start" --name nextjs
+            pm2 save
