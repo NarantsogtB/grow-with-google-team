@@ -7,6 +7,6 @@ from app.main import app
 client = TestClient(app)
 
 def test_helth_check():
-    response=client.get("/")
+    response=client.get("/api")
     assert response.status_code == 200
     assert response.json() == {"message":"server is running", "status":"online", "version":"v1"} 
