@@ -1,20 +1,28 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
-from app.utils.logger import get_logger
-from app.database import Base, engine
 
-logger=get_logger("app")
+from fastapi import FastAPI
+
+from app import models
+from app.database import Base, engine
+from app.routers import patients
+from app.utils.logger import get_logger
+
+
+logger = get_logger("app")
 
 
 @asynccontextmanager
-async def lifespan(_app: FastAPI):
+async def lifespan(app: FastAPI):
     Base.metadata.create_all(bind=engine)
     logger.info("Family medical Core API started")
     yield
 
 
-app=FastAPI(title="Family medical Core API", lifespan=lifespan)
+app = FastAPI(title="Family medical Core API", lifespan=lifespan)
+
+app.include_router(patients.router)
+
 
 @app.get("/health")
-def helth_check():
-    return {"message":"server is running", "status":"online", "version":"v1"} 
+def health_check():
+    return {"message": "server is running", "status": "online", "version": "v1"}
