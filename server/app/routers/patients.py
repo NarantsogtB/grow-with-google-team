@@ -1,6 +1,7 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
+from sqlalchemy.orm import Session
 
-from app.database import Database
+from app.database import get_db
 from app.models import Patient
 from app.schemas import PatientCreate, PatientResponse
 
@@ -8,7 +9,7 @@ router = APIRouter(prefix="/patients", tags=["Patients"])
 
 
 @router.post("/", response_model=PatientResponse)
-def create_patient(patient: PatientCreate, db: Database):
+def create_patient(patient: PatientCreate, db: Session = Depends(get_db)):
     existing_patient = db.query(Patient).filter(Patient.phone == patient.phone).first()
 
     if existing_patient:
@@ -19,7 +20,19 @@ def create_patient(patient: PatientCreate, db: Database):
         phone=patient.phone,
         telegram_id=patient.telegram_id,
         address=patient.address,
+        age=patient.age,
+        gender=patient.gender,
+        medical_history=patient.medical_history,
+        anamnesis=patient.anamnesis,
+        symptoms=patient.symptoms,
+        is_active=patient.is_active,
+        action_type=patient.action_type,
+        guardian_phone=patient.guardian_phone,
+        patient_type=patient.patient_type,
+        registration_number=patient.registration_number,
+        location_coordinates=patient.location_coordinates,
         risk_level=patient.risk_level,
+        last_visit_at=patient.last_visit_at,
     )
 
     db.add(new_patient)
@@ -30,12 +43,12 @@ def create_patient(patient: PatientCreate, db: Database):
 
 
 @router.get("/", response_model=list[PatientResponse])
-def get_patients(db: Database):
+def get_patients(db: Session = Depends(get_db)):
     return db.query(Patient).all()
 
 
 @router.get("/{patient_id}", response_model=PatientResponse)
-def get_patient(patient_id: int, db: Database):
+def get_patient(patient_id: int, db: Session = Depends(get_db)):
     patient = db.query(Patient).filter(Patient.id == patient_id).first()
 
     if not patient:
