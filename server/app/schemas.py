@@ -41,5 +41,5 @@ class PatientResponse(PatientBase):
     uuid: str
     created_at: datetime
 
-    class Config:
+    class Config: #SQLAlchemy object → Pydantic response → JSON
         from_attributes = True
