@@ -39,7 +39,7 @@ test:
 	python3 -m pytest
 
 migrate:
-	$(ALEMBIC) revision --autogenerate -m $(msg)
+	$(ALEMBIC) revision --autogenerate -m '$(msg)'
 	$(ALEMBIC) upgrade head
 
 clean:
