@@ -19,3 +19,5 @@ if not _root_logger.handlers:
     
 def get_logger(name:str) -> logging.Logger:
     return _root_logger.getChild(name)
+
+logger = get_logger("Family API")
