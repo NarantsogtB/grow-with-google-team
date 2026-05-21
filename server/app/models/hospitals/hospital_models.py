@@ -15,7 +15,7 @@ class Hospital(Base):
     address = Column(String, nullable=False)
     is_active = Column(Boolean, default=True)
     level = Column(Enum(HealthcareLevelEnum, name='hospital_level_enum'), default=HealthcareLevelEnum.PRIMARY)
-    doctors = relationship('Doctors', back_populates='hospitals', cascade='all, delete-orphan')
+    doctors = relationship("Doctor", back_populates='hospital', cascade='all, delete-orphan')
     
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, onupdate=func.now())
