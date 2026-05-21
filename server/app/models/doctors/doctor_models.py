@@ -5,6 +5,7 @@ from app.database import Base
 from app.common_types.enums import GenderEnum, DoctorRoleEnum
 import uuid
 
+
 class Doctor(Base):
     __tablename__ = 'doctors'
     
