@@ -15,10 +15,18 @@ interface Patient {
   coords: { x: number; y: number };
 }
 
+const fallbackData: Patient[] = [
+  { id: 1, name: "Д. Мөнхбат", age: 67, address: "4 хороо, 32-р байр, 14", distance: "0.8 км", time: "09:20", status: "urgent", triageScore: 8, preliminaryNote: "Цусны даралт 165/100 · толгой эргэх.", coords: { x: 20, y: 40 } },
+  { id: 2, name: "Ц. Оюунчимэг", age: 72, address: "4 хороо, 28-р байр, 41", distance: "1.2 км", time: "09:50", status: "active", triageScore: 4, preliminaryNote: "Зүрхний бэрхшээл байхгүй", coords: { x: 45, y: 60 } },
+  { id: 3, name: "Б. Дорж", age: 45, address: "5 хороо, 12-р гудамж, 7", distance: "1.7 км", time: "10:30", status: "pending", triageScore: 2, preliminaryNote: "Хөл өвдөнө гэсэн", coords: { x: 60, y: 30 } }
+];
+
 export default function Dashboard() {
-  const [patients, setPatients] = useState<Patient[]>([]);
-  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
-  const [loading, setLoading] = useState(true);
+  // const [patients, setPatients] = useState<Patient[]>(fallbackData);
+  // const [selectedPatient, setSelectedPatient] = useState<Patient | null>(fallbackData[1]);
+  // const [loading, setLoading] = useState(false);
+  const [patients] = useState<Patient[]>(fallbackData);
+  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(fallbackData[1]);
   
   //  ШИНЭ: Үзлэг эхэлсэн эсэхийг хянах төлөв
   const [isConsulting, setIsConsulting] = useState(false);
@@ -31,16 +39,16 @@ export default function Dashboard() {
   const [aiResult, setAiResult] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
 
-  useEffect(() => {
-    const fallbackData: Patient[] = [
-      { id: 1, name: "Д. Мөнхбат", age: 67, address: "4 хороо, 32-р байр, 14", distance: "0.8 км", time: "09:20", status: "urgent", triageScore: 8, preliminaryNote: "Цусны даралт 165/100 · толгой эргэх.", coords: { x: 20, y: 40 } },
-      { id: 2, name: "Ц. Оюунчимэг", age: 72, address: "4 хороо, 28-р байр, 41", distance: "1.2 км", time: "09:50", status: "active", triageScore: 4, preliminaryNote: "Зүрхний бэрхшээл байхгүй", coords: { x: 45, y: 60 } },
-      { id: 3, name: "Б. Дорж", age: 45, address: "5 хороо, 12-р гудамж, 7", distance: "1.7 км", time: "10:30", status: "pending", triageScore: 2, preliminaryNote: "Хөл өвдөнө гэсэн", coords: { x: 60, y: 30 } }
-    ];
-    setPatients(fallbackData);
-    setSelectedPatient(fallbackData[1]);
-    setLoading(false);
-  }, []);
+  // useEffect(() => {
+  //   const fallbackData: Patient[] = [
+  //     { id: 1, name: "Д. Мөнхбат", age: 67, address: "4 хороо, 32-р байр, 14", distance: "0.8 км", time: "09:20", status: "urgent", triageScore: 8, preliminaryNote: "Цусны даралт 165/100 · толгой эргэх.", coords: { x: 20, y: 40 } },
+  //     { id: 2, name: "Ц. Оюунчимэг", age: 72, address: "4 хороо, 28-р байр, 41", distance: "1.2 км", time: "09:50", status: "active", triageScore: 4, preliminaryNote: "Зүрхний бэрхшээл байхгүй", coords: { x: 45, y: 60 } },
+  //     { id: 3, name: "Б. Дорж", age: 45, address: "5 хороо, 12-р гудамж, 7", distance: "1.7 км", time: "10:30", status: "pending", triageScore: 2, preliminaryNote: "Хөл өвдөнө гэсэн", coords: { x: 60, y: 30 } }
+  //   ];
+  //   setPatients(fallbackData);
+  //   setSelectedPatient(fallbackData[1]);
+  //   setLoading(false);
+  // }, []);
 
   // AI-аас зөвлөмж авах хэсгийг дуурайлгах
   const handleAskAI = () => {
