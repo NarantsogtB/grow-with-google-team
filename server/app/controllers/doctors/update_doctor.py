@@ -8,12 +8,13 @@ from sqlalchemy import update
 from app.exceptions import DoctorNotFoundError, DoctorUpdateEmptyError
 
 def update_doctor(db: Database, doctor_id: UUID, doctor_data: DoctorUpdate) -> Doctor:
-    """Эмчийн мэдээллийг шинэчлээд, шинэчлэгдсэн датаг шууд буцаана (Drizzle-style + RETURNING)"""
-    
+    """modify doctors info and status"""
+    logger.info(f"{doctor_id} - тай эмчийн мэдээллийг шинэчлэх хүсэлт ирлээ")
     update_dict = doctor_data.model_dump(exclude_unset=True)
     
     if not update_dict:
-       raise DoctorUpdateEmptyError()
+        logger.warning(f"{doctor_id} - тай эмчийн мэдээллийг хоосон талбараар шинэчлэх гэж байна")
+        raise DoctorUpdateEmptyError()
 
     stmt = (
         update(Doctor)
@@ -26,7 +27,9 @@ def update_doctor(db: Database, doctor_id: UUID, doctor_data: DoctorUpdate) -> D
     updated_doctor = result.scalar() 
     
     if updated_doctor is None:
+        logger.warning(f"{doctor_id} - тай эмч бүртэгдээгүй байна")
         raise DoctorNotFoundError(doctor_id=doctor_id)
         
     db.commit()
+    logger.info(f"{doctor_id} - тай эмчийн мэдээллийг амжилттай шинэчлэлээ")
     return updated_doctor

@@ -11,7 +11,6 @@ def test_read_doctor_by_id_success(db_session, faker):
     """Doctor info success it will return status code 200"""
     doctor_id = uuid4()
     
-    # 1. SQLAlchemy ашиглан Идэвхтэй эмчийг In-Memory баазад шууд үүсгэж хадгална
     db_doctor = Doctor(
         id=doctor_id,
         first_name=faker.first_name(),
@@ -22,7 +21,7 @@ def test_read_doctor_by_id_success(db_session, faker):
         assigned_sector="01",
         role="GENERAL",
         telegram_id=str(faker.random_int(100000000, 999999999)),
-        is_active=True # Идэвхтэй
+        is_active=True
     )
     db_session.add(db_doctor)
     db_session.commit()
