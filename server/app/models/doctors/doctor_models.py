@@ -20,6 +20,7 @@ class Doctor(Base):
     telegram_id = Column(String, nullable=True)
     is_active = Column(Boolean, default=True)
     is_available = Column(Boolean, default=True)
+    password = Column(String, nullable=True, default=None)
     hospital_id = Column(UUID(as_uuid=True), ForeignKey("hospitals.id"))
     hospital = relationship("Hospital", back_populates="doctors")
     

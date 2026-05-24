@@ -27,3 +27,22 @@ class DoctorUpdateEmptyError(WebAppError):
     """When user send empty dict use this exception"""
     def __init__(self) -> None:
         super().__init__("Шинэчлэх мэдээлэл ирээгүй тул хоосон талбараар шинэчлэх боломжгүй.")
+        
+        
+class HospitalAlreadyExistError(WebAppError):
+    """Hospital already registered by phone"""
+    def __init__(self, hospital_phone:str):
+        self.hospital_phone = hospital_phone
+        super().__init__(f"{hospital_phone} энэ дугаартай эмнэлэг бүртгэлтэй байна.")
+
+class HospitalNotFoundError(WebAppError):
+    """Hospital not found from Database"""
+    def __init__(self, hospital_id = None):
+        self.hospital_id=hospital_id
+        super().__init__(f"{hospital_id} - тай эмнэлэг олдсонгүй")
+
+class HospitalUpdateEmptyError(WebAppError):
+    """When admin send empty dict use this exception"""
+    def __init__(self) -> None:
+        super().__init__("Шинэчлэх мэдээлэл ирээгүй тул хоосон талбараар шинэчлэх боломжгүй.")
+    
