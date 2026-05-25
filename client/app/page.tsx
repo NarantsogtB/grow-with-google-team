@@ -1,65 +1,85 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useState } from "react";
+import { usePatients, Patient } from "@/hooks/use-patients"; 
+import { Header } from "@/components/header"; 
+import { StatsCard } from "@/components/dashboard/stats-card";
+import { UrgentCard } from "@/components/dashboard/urgent-card";          
+import { PatientMainCard } from "@/components/dashboard/patient-main-card";  
+import { PatientItemList } from "@/components/patient/patient-item-list";
+import { PatientMap } from "@/components/patient/patient-map";
+import { ConsultationView } from "@/components/consultation/consultation-view";
+
+export default function Dashboard() {
+  const { patients, loading, fallbackData } = usePatients();
+  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(fallbackData[1]);
+  const [isConsulting, setIsConsulting] = useState(false);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#eaf2ee] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1e5d48]"></div>
+      </div>
+    );
+  }
+
+  if (isConsulting && selectedPatient) {
+    return (
+      <ConsultationView 
+        selectedPatient={selectedPatient} 
+        onClose={() => setIsConsulting(false)} 
+      />
+    );
+  }
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="min-h-screen bg-[#eaf2ee] p-4 lg:p-8 font-sans text-[#334155] antialiased">
+      <Header />
+
+      {/* Үндсэн div */}
+      <div className="flex flex-col gap-6">
+        
+        {/* 🌟 1. ДЭЭД ТАЛ (StatsCard болон UrgentCard) */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+          <div className="lg:col-span-8 flex flex-col">
+            <StatsCard totalPatients={patients.length} />
+          </div>
+          <div className="lg:col-span-4 flex flex-col">
+            <UrgentCard />
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+
+        {/* 🌟 2. ДООД ТАЛ (Жагсаалт, Зураг болон Үндсэн Карт) */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+          
+          {/* Зүүн талын дэд div */}
+          <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
+            
+            <div className="md:col-span-5 border-2 border-white/50 rounded-[32px] overflow-hidden flex flex-col shadow-sm">
+              <PatientItemList 
+                patients={patients} 
+                selectedPatient={selectedPatient} 
+                onSelectPatient={setSelectedPatient} 
+              />
+            </div>
+
+            <div className="md:col-span-7 border-2 border-white/50 rounded-[32px] overflow-hidden flex flex-col shadow-sm">
+              <PatientMap patients={patients} selectedPatient={selectedPatient} />
+            </div>
+
+          </div>
+
+          {/* Баруун талын дэд div (Үндсэн карт) */}
+          <div className="lg:col-span-4 flex flex-col">
+            <PatientMainCard 
+              selectedPatient={selectedPatient} 
+              onStartConsultation={() => setIsConsulting(true)} 
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+          </div>
+
         </div>
-      </main>
+
+      </div>
     </div>
   );
 }
