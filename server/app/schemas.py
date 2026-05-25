@@ -3,7 +3,7 @@ from typing import Optional
 
 from pydantic import BaseModel
 
-from app.models import GenderEnum, PatientTypeEnum, ActionTypeEnum
+from app.common_types.enums import GenderEnum, PatientTypeEnum, ActionTypeEnum
 
 
 class PatientBase(BaseModel):
