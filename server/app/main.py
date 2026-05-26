@@ -1,8 +1,6 @@
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
-
-from app import models
 from app.database import Base, engine
 from app.routers import patients
 from app.routers.doctors import doctor_routers
@@ -23,6 +21,7 @@ app = FastAPI(title="Family medical Core API", lifespan=lifespan)
 
 app.include_router(patients.router)
 app.include_router(doctor_routers.router)
+app.include_router(hospital_router.router)
 
 
 @app.get("/health")

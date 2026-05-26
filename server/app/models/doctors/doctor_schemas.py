@@ -32,9 +32,6 @@ class DoctorUpdate(BaseModel):
     telegram_id: Optional[str] = None
     hospital_id: Optional[str] = None
     
-    
-
-
 class DoctorDeleteResponse(BaseModel):
     message: str
     success: bool
