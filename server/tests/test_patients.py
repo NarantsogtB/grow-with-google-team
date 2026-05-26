@@ -4,51 +4,52 @@ from app.main import app
 
 client = TestClient(app)
 
-#FastAPI TestClient ашиглаж шалгана
+
+# FastAPI TestClient ашиглаж шалгана
 def test_create_patient():
     response = client.post(
         "/patients/",
         json={
-            "name": "Test Patient",
-            "phone": "99112235",
-            "telegram_id": "123456",
-            "address": "Test address",
-            "age": 65,
-            "gender": "MALE",
-            "medical_history": "Diabetes",
-            "anamnesis": "Толгой өвдөж байна",
-            "symptoms": "Халуурсан",
-            "is_active": True,
-            "action_type": "REGULAR_CHECK",
-            "guardian_phone": "99887766",
-            "patient_type": "ELDERLY",
-            "registration_number": "АБ12345680",
-            "location_coordinates": "47.918873,106.917701",
-            "risk_level": "low",
-            "last_visit_at": None,
+            "full_name": "Test Patient",
+            "phone_number": "99112235",
+            "telegram_chat_id": "123456",
+            "address_text": "Test address",
+            "latitude": 47.918873,
+            "longitude": 106.917701,
         },
     )
 
-    print(response.status_code)
-    print(response.json())
-
     assert response.status_code == 200
 
-#GET /patients/ test нэмнэ  
+    data = response.json()
+    assert data["full_name"] == "Test Patient"
+    assert data["phone_number"] == "99112235"
+    assert data["telegram_chat_id"] == "123456"
+    assert data["address_text"] == "Test address"
+    assert data["latitude"] == 47.918873
+    assert data["longitude"] == 106.917701
+    assert "id" in data
+    assert "created_at" in data
+
+
+# GET /patients/ test
 def test_get_patients():
     response = client.get("/patients/")
 
     assert response.status_code == 200
     assert isinstance(response.json(), list)
-    
-    
+
+
 def test_get_patient_by_id():
     create_response = client.post(
         "/patients/",
         json={
-            "name": "Single Patient",
-            "phone": "99112236",
-            "registration_number": "АБ12345681",
+            "full_name": "Single Patient",
+            "phone_number": "99112236",
+            "address_text": "Single patient address",
+            "telegram_chat_id": "123457",
+            "latitude": 47.918800,
+            "longitude": 106.917700,
         },
     )
 
@@ -63,24 +64,28 @@ def test_get_patient_by_id():
 
     data = response.json()
     assert data["id"] == patient_id
-    assert data["name"] == "Single Patient"
-    assert data["phone"] == "99112236"
-    
+    assert data["full_name"] == "Single Patient"
+    assert data["phone_number"] == "99112236"
+    assert data["address_text"] == "Single patient address"
 
-#Байхгүй patient ID шалгах test
+
+# Байхгүй patient ID шалгах test
 def test_get_patient_not_found():
-    response = client.get("/patients/999999")
+    response = client.get("/patients/00000000-0000-0000-0000-000000000000")
 
     assert response.status_code == 404
     assert response.json()["detail"] == "Patient not found"
-    
 
-#Давхардсан phone шалгах test
+
+# Давхардсан phone_number шалгах test
 def test_create_patient_duplicate_phone():
     payload = {
-        "name": "Duplicate Patient",
-        "phone": "99112237",
-        "registration_number": "АБ12345682",
+        "full_name": "Duplicate Patient",
+        "phone_number": "99112237",
+        "address_text": "Duplicate patient address",
+        "telegram_chat_id": "123458",
+        "latitude": 47.918873,
+        "longitude": 106.917701,
     }
 
     first_response = client.post("/patients/", json=payload)
@@ -89,9 +94,12 @@ def test_create_patient_duplicate_phone():
     second_response = client.post(
         "/patients/",
         json={
-            "name": "Duplicate Patient 2",
-            "phone": "99112237",
-            "registration_number": "АБ12345683",
+            "full_name": "Duplicate Patient 2",
+            "phone_number": "99112237",
+            "address_text": "Duplicate patient second address",
+            "telegram_chat_id": "123459",
+            "latitude": 47.918900,
+            "longitude": 106.917900,
         },
     )
 

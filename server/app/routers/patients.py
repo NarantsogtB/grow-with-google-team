@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
 
@@ -10,29 +12,25 @@ router = APIRouter(prefix="/patients", tags=["Patients"])
 
 @router.post("/", response_model=PatientResponse)
 def create_patient(patient: PatientCreate, db: Session = Depends(get_db)):
-    existing_patient = db.query(Patient).filter(Patient.phone == patient.phone).first()
+    existing_patient = (
+        db.query(Patient)
+        .filter(Patient.phone_number == patient.phone_number)
+        .first()
+    )
 
     if existing_patient:
-        raise HTTPException(status_code=400, detail="Patient with this phone already exists")
+        raise HTTPException(
+            status_code=400,
+            detail="Patient with this phone already exists",
+        )
 
     new_patient = Patient(
-        name=patient.name,
-        phone=patient.phone,
-        telegram_id=patient.telegram_id,
-        address=patient.address,
-        age=patient.age,
-        gender=patient.gender,
-        medical_history=patient.medical_history,
-        anamnesis=patient.anamnesis,
-        symptoms=patient.symptoms,
-        is_active=patient.is_active,
-        action_type=patient.action_type,
-        guardian_phone=patient.guardian_phone,
-        patient_type=patient.patient_type,
-        registration_number=patient.registration_number,
-        location_coordinates=patient.location_coordinates,
-        risk_level=patient.risk_level,
-        last_visit_at=patient.last_visit_at,
+        full_name=patient.full_name,
+        phone_number=patient.phone_number,
+        telegram_chat_id=patient.telegram_chat_id,
+        address_text=patient.address_text,
+        latitude=patient.latitude,
+        longitude=patient.longitude,
     )
 
     db.add(new_patient)
@@ -48,7 +46,7 @@ def get_patients(db: Session = Depends(get_db)):
 
 
 @router.get("/{patient_id}", response_model=PatientResponse)
-def get_patient(patient_id: int, db: Session = Depends(get_db)):
+def get_patient(patient_id: UUID, db: Session = Depends(get_db)):
     patient = db.query(Patient).filter(Patient.id == patient_id).first()
 
     if not patient:

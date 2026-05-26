@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from app.database import Base, engine
 from app.routers import patients
+from app.routers import hospital_router
 from app.routers.doctors import doctor_routers
 from app.utils.logger import get_logger
 
