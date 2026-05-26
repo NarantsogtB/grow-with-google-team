@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 from pydantic import BaseModel, ConfigDict, Field
 from app.common_types.enums import HealthcareLevelEnum
 from datetime import datetime
@@ -24,6 +24,7 @@ class HospitalDeleteResponse(BaseModel):
     message: str
     success: bool
     
+
 class HospitalResponse(HospitalBase):
     id: UUID
     is_active: bool
@@ -31,3 +32,15 @@ class HospitalResponse(HospitalBase):
     updated_at: Optional[datetime] = None
     
     model_config = ConfigDict(from_attributes=True)
+
+class HospitalUpdateResponse(BaseModel):
+    message: str
+    data: HospitalResponse
+    
+    model_config = ConfigDict(from_attributes=True)
+    
+class HospitalListResponse(BaseModel):
+    items: List[HospitalResponse]
+    total: int
+    page: int
+    size: int

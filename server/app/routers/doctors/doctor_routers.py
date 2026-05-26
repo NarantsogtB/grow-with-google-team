@@ -2,7 +2,7 @@ from fastapi import APIRouter, Query, HTTPException, status
 from app.database import Database
 from app.models.doctors import DoctorCreate, DoctorResponse, DoctorListResponse,DoctorUpdate, DoctorUpdateResponse
 from app.controllers.doctors import create_new_doctor, get_doctor_by_id, get_doctors, update_doctor
-from app.exceptions import DoctorAlreadyExistsError, DoctorNotFoundError, DoctorNotActiveError, WebAppError
+from app.exceptions import DoctorAlreadyExistsError, DoctorNotFoundError, DoctorNotActiveError, WebAppError, DoctorUpdateEmptyError
 from uuid import UUID
 
 
@@ -37,7 +37,7 @@ def read_all_doctors(
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal server error occurred")
     
 
-@router.get("/{doctor_id}")
+@router.get("/{doctor_id}", status_code=status.HTTP_200_OK)
 def read_doctor_by_id(db: Database, doctor_id: UUID) -> DoctorResponse:
     try:
         return get_doctor_by_id(db, doctor_id)
@@ -50,7 +50,7 @@ def read_doctor_by_id(db: Database, doctor_id: UUID) -> DoctorResponse:
     except Exception:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal server error occurred")
     
-@router.put("/{doctor_id}")
+@router.put("/{doctor_id}", status_code=status.HTTP_200_OK)
 def modify_doctor(db: Database, doctor_id:UUID, doctor_data:DoctorUpdate) -> DoctorUpdateResponse:
     try:
         updated_doctor = update_doctor(db,doctor_id,doctor_data)
@@ -60,3 +60,9 @@ def modify_doctor(db: Database, doctor_id:UUID, doctor_data:DoctorUpdate) -> Doc
         )
     except DoctorNotFoundError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    except DoctorUpdateEmptyError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    except WebAppError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    except Exception:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal server error occurred")
