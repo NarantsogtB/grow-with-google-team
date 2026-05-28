@@ -11,7 +11,10 @@ class PatientTypeEnum(str, PythonEnum):
     PALLIATIVE = "PALLIATIVE"
     DISABLED = "DISABLED"
     REGULAR = "REGULAR"
-    
+
+class ActionTypeEnum(str, PythonEnum):
+    REGULAR_CHECK = "REGULAR_CHECK"
+
 class DoctorRoleEnum(str, PythonEnum):
     GENERAL = "GENERAL"
     PEDIATRICIAN = "PEDIATRICIAN"

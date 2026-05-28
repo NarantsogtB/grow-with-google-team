@@ -6,8 +6,10 @@ from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
 from alembic import context
-from app.config import settings
+
 from app.database import Base
+from app import models
+from app.config import settings
 from app.models.doctors.doctor_models import Doctor
 from app.models.hospitals.hospital_models import Hospital
 # this is the Alembic Config object, which provides
@@ -85,3 +87,4 @@ if context.is_offline_mode():
     run_migrations_offline()
 else:
     run_migrations_online()
+
