@@ -84,5 +84,4 @@ def test_create_patient_duplicate_phone():
             "longitude": 106.917900,
         },
     )
-    # Ижил утастай хэрэгдэгч оруулахад FastAPI валидацийн 422 алдаа өгч байна
-    assert second_response.status_code == 422
+    assert second_response.status_code == 400
