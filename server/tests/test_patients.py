@@ -12,6 +12,7 @@ def test_create_patient():
         json={
             "full_name": "Test Patient",
             "phone_number": "99112235",
+            "password": "password123",
             "telegram_chat_id": "123456",
             "address_text": "Test address",
             "latitude": 47.918873,
@@ -47,6 +48,7 @@ def test_get_patient_by_id():
             "full_name": "Single Patient",
             "phone_number": "99112236",
             "address_text": "Single patient address",
+            "password": "password123",
             "telegram_chat_id": "123457",
             "latitude": 47.918800,
             "longitude": 106.917700,
@@ -83,6 +85,7 @@ def test_create_patient_duplicate_phone():
         "full_name": "Duplicate Patient",
         "phone_number": "99112237",
         "address_text": "Duplicate patient address",
+        "password": "password123",
         "telegram_chat_id": "123458",
         "latitude": 47.918873,
         "longitude": 106.917701,
