@@ -17,4 +17,5 @@ class Patient(Base):
     address_text = Column(Text, nullable=False)
     latitude = Column(Float, nullable=True)
     longitude = Column(Float, nullable=True)
+    password = Column(String, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
