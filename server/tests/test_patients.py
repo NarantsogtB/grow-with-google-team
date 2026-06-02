@@ -55,14 +55,14 @@ def test_get_patient_by_id():
         },
     )
 
-    assert create_response.status_code == 200
+    assert create_response.status_code == 201
 
     created_patient = create_response.json()
     patient_id = created_patient["id"]
 
     response = client.get(f"/patients/{patient_id}")
 
-    assert response.status_code == 200
+    assert response.status_code == 201
 
     data = response.json()
     assert data["id"] == patient_id
@@ -92,7 +92,7 @@ def test_create_patient_duplicate_phone():
     }
 
     first_response = client.post("/patients/", json=payload)
-    assert first_response.status_code == 200
+    assert first_response.status_code == 201
 
     second_response = client.post(
         "/patients/",
