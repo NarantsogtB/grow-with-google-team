@@ -1,7 +1,13 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
+
+interface AuthState {
+  token: string | null;
+  userName: string | null;
+  userAddress: string | null;
+}
 
 const AuthContext = createContext<{
   token: string | null;
@@ -11,52 +17,41 @@ const AuthContext = createContext<{
 } | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [token, setToken] = useState<string | null>(null);
-  const [userName, setUserName] = useState<string | null>(null);
-  const [userAddress, setUserAddress] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
   const router = useRouter();
   const pathname = usePathname();
 
-  useEffect(() => {
-    const storedToken = localStorage.getItem('token');
-    const storedName = localStorage.getItem('user_name');
-    const storedAddress = localStorage.getItem('user_address');
-    
-    setToken(storedToken);
-    setUserName(storedName);
-    setUserAddress(storedAddress);
-    setLoading(false);
+  // 1. Анх хуудас ачаалагдахад localStorage-оос датаг шууд уншиж State-ийг үүсгэнэ (useEffect ашиглахгүй)
+  const [auth, setAuth] = useState<AuthState>(() => {
+    if (typeof window !== 'undefined') {
+      return {
+        token: localStorage.getItem('token'),
+        userName: localStorage.getItem('user_name'),
+        userAddress: localStorage.getItem('user_address'),
+      };
+    }
+    return { token: null, userName: null, userAddress: null };
+  });
 
-    if (!storedToken && pathname !== '/login' && pathname !== '/register') {
+  // 2. Зөвхөн Рүүтинг (Хамгаалалт) хийх хэсгийг useEffect дотор үлдээнэ (State өөрчлөхгүй )
+  useEffect(() => {
+    if (!auth.token && pathname !== '/login' && pathname !== '/register') {
       router.push('/login');
     }
-    
-    if (storedToken && (pathname === '/login' || pathname === '/register')) {
+    if (auth.token && (pathname === '/login' || pathname === '/register')) {
       router.push('/');
     }
-  }, [pathname, router]);
+  }, [auth.token, pathname, router]);
 
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user_name');
     localStorage.removeItem('user_address');
-    setToken(null);
-    setUserName(null);
-    setUserAddress(null);
+    setAuth({ token: null, userName: null, userAddress: null });
     router.push('/login');
   };
 
-  if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-[#eef4f0]">
-        <div className="animate-pulse text-[#1a5342] font-semibold text-sm">Уншиж байна...</div>
-      </div>
-    );
-  }
-
   return (
-    <AuthContext.Provider value={{ token, userName, userAddress, logout }}>
+    <AuthContext.Provider value={{ ...auth, logout }}>
       {children}
     </AuthContext.Provider>
   );

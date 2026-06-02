@@ -39,9 +39,13 @@ export default function RegisterPage() {
       }
 
       router.push('/login');
-    } catch (err: any) {
-      setError(err.message);
-    }
+    } catch (err) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("Алдаа гарлаа");
+        }
+      }
   };
 
   return (
