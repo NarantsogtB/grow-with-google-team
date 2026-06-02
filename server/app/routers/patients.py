@@ -5,7 +5,10 @@ from passlib.context import CryptContext
 
 from app.database import get_db
 from app.models.patients.patient_models import Patient  
-from app.schemas import PatientCreate, PatientResponse, LoginRequest 
+from app.schemas import PatientCreate, PatientResponse, LoginRequest
+import logging
+logging.getLogger("passlib").setLevel(logging.ERROR)
+from fastapi import APIRouter, Depends, HTTPException, status 
 
 router = APIRouter(prefix="/patients", tags=["Patients & Auth"])
 
