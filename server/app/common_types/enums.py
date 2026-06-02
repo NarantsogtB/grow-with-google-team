@@ -14,6 +14,8 @@ class PatientTypeEnum(str, PythonEnum):
 
 class ActionTypeEnum(str, PythonEnum):
     REGULAR_CHECK = "REGULAR_CHECK"
+    EMERGENCY = "EMERGENCY"
+    FOLLOW_UP = "FOLLOW_UP"
 
 class DoctorRoleEnum(str, PythonEnum):
     GENERAL = "GENERAL"
@@ -24,3 +26,10 @@ class HealthcareLevelEnum(str, PythonEnum):
     PRIMARY = "PRIMARY"      
     SECONDARY = "SECONDARY"
     TERTIARY = "TERTIARY"
+    
+class DayOfWeekEnum(str, PythonEnum):
+    MONDAY = "monday"
+    TUESDAY = "tuesday"
+    WEDNESDAY = "wednesday"
+    THURSDAY = "thursday"
+    FRIDAY = "friday"
