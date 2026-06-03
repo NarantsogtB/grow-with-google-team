@@ -52,7 +52,6 @@ export function ConsultationView({ selectedPatient, onClose }: ConsultationViewP
               <p className="font-bold text-[#475569]">Урьдчилсан асуумж:</p>
               <p className="text-[#64748b] mt-1">{selectedPatient.preliminaryNote}</p>
             </div>
-            
             <label className="block text-[11px] font-black text-[#94a3b8] uppercase tracking-wider mb-2">Үзлэгийн явц / Онош / Зөвлөмж</label>
             <textarea 
               rows={8}

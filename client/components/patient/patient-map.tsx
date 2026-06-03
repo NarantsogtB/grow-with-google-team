@@ -5,45 +5,92 @@ import { Patient } from "@/hooks/use-patients";
 interface PatientMapProps {
   patients: Patient[];
   selectedPatient: Patient | null;
+  isRouteOptimized?: boolean;
 }
 
-export function PatientMap({ selectedPatient }: PatientMapProps) {
+const STATUS_STYLES = {
+  urgent: { dot: "bg-red-500", badge: "bg-red-50 border-red-200 text-red-700", number: "bg-red-500" },
+  active: { dot: "bg-emerald-500", badge: "bg-emerald-50 border-emerald-200 text-emerald-700", number: "bg-emerald-500" },
+  pending: { dot: "bg-slate-400", badge: "bg-slate-50 border-slate-200 text-slate-600", number: "bg-slate-400" },
+  completed: { dot: "bg-blue-400", badge: "bg-blue-50 border-blue-200 text-blue-700", number: "bg-blue-400" },
+};
+
+const STATUS_PRIORITY: Record<string, number> = { active: 0, urgent: 1, pending: 2, completed: 3 };
+
+function sortByPriority(patients: Patient[]): Patient[] {
+  return [...patients].sort((a, b) => {
+    const diff = STATUS_PRIORITY[a.status] - STATUS_PRIORITY[b.status];
+    return diff !== 0 ? diff : b.triageScore - a.triageScore;
+  });
+}
+
+function buildRouteUrl(patients: Patient[]): string {
+  const sorted = sortByPriority(patients);
+  const encode = (p: Patient) => encodeURIComponent(`${p.address}, Ulaanbaatar`);
+  if (sorted.length === 1) {
+    return `https://maps.google.com/maps?q=${encode(sorted[0])}&output=embed`;
+  }
+  const origin = encode(sorted[0]);
+  const daddr = sorted.slice(1).map(encode).join("+to:");
+  return `https://maps.google.com/maps?saddr=${origin}&daddr=${daddr}&output=embed`;
+}
+
+export function PatientMap({ patients, selectedPatient, isRouteOptimized = false }: PatientMapProps) {
+  const sortedPatients = sortByPriority(patients);
+
+  const mapQuery = encodeURIComponent(
+    selectedPatient?.address
+      ? `${selectedPatient.address}, Ulaanbaatar, Mongolia`
+      : "Ulaanbaatar, Mongolia"
+  );
+
+  const mapSrc = isRouteOptimized && patients.length > 0
+    ? buildRouteUrl(patients)
+    : `https://www.google.com/maps?q=${mapQuery}&output=embed`;
+
   return (
-    <div className="rounded-[32px] p-6 shadow-sm border-2 border-white/50 flex flex-col h-[480px] bg-white/80 backdrop-blur-md relative overflow-hidden w-full">
-      
-      <div className="absolute top-6 left-6 z-10 flex gap-2">
-        <div className="bg-white/90 backdrop-blur-sm px-4 py-2 rounded-xl text-[11px] font-bold text-[#1e293b] border border-white/50 shadow-sm">
-          Зам <span className="text-[#64748b] ml-1">· 18.4 км</span>
+    <div className="relative flex h-[480px] w-full flex-col overflow-hidden rounded-[32px] border-2 border-white/50 bg-white/80 shadow-sm backdrop-blur-md">
+      <div className="absolute left-6 top-6 z-10 flex flex-wrap gap-2">
+        <div className="rounded-xl border border-white/60 bg-white/95 px-4 py-2 text-[11px] font-bold text-[#1e293b] shadow-sm backdrop-blur-sm">
+          Зам <span className="ml-1 text-[#64748b]">· 18.4 км</span>
         </div>
-        <div className="bg-white/90 backdrop-blur-sm px-4 py-2 rounded-xl text-[11px] font-bold text-[#1e293b] border border-white/50 shadow-sm">
-          Цаг <span className="text-[#64748b] ml-1">· ~3h 20m</span>
+        <div className="rounded-xl border border-white/60 bg-white/95 px-4 py-2 text-[11px] font-bold text-[#1e293b] shadow-sm backdrop-blur-sm">
+          Цаг <span className="ml-1 text-[#64748b]">· ~3h 20m</span>
+        </div>
+        <div className="rounded-xl border border-white/60 bg-white/95 px-4 py-2 text-[11px] font-bold text-[#1e293b] shadow-sm backdrop-blur-sm">
+          Айл <span className="ml-1 text-[#64748b]">· {patients.length}</span>
         </div>
       </div>
 
-      {/* Мок Газрын зургийн арын тор (Grid) */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] bg-[size:40px_40px] opacity-40"></div>
-      
-      {/* Маршрутын шугам ба цэгүүд */}
-      <div className="relative w-full h-full flex items-center justify-center">
-        <svg className="absolute w-full h-full p-12" viewBox="0 0 100 100" preserveAspectRatio="none">
-          <path d="M 20 50 Q 40 60, 50 55 T 80 70" fill="none" stroke="#1e5d48" strokeWidth="1" strokeDasharray="3,3" />
-        </svg>
+      {isRouteOptimized && (
+        <div className="absolute bottom-5 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2 rounded-2xl border border-white/60 bg-white/95 px-4 py-3 shadow-lg backdrop-blur-sm">
+          {sortedPatients.map((patient, index) => {
+            const style = STATUS_STYLES[patient.status as keyof typeof STATUS_STYLES] ?? STATUS_STYLES.pending;
+            return (
+              <div key={patient.id} className="flex items-center gap-1.5">
+                {index > 0 && (
+                  <span className="text-[10px] font-bold text-slate-300 mx-0.5">→</span>
+                )}
+                <div className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 ${style.badge}`}>
+                  <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-black text-white ${style.number}`}>
+                    {index + 1}
+                  </span>
+                  <span className="text-[11px] font-bold">{patient.name}</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
-        {/* Цэг 1 (Яаралтай - Д. Мөнхбат) */}
-        <div className={`absolute transition-all duration-300 rounded-full w-9 h-9 flex items-center justify-center font-bold text-xs border-4 shadow-md left-[20%] top-[45%] ${
-          selectedPatient?.id === 1 ? 'bg-[#ef4444] text-white border-white ring-4 ring-[#ef4444]/20 scale-110' : 'bg-[#ef4444] text-white border-white'
-        }`}>1</div>
-
-        {/* Цэг 2 (Ц. Оюунчимэг) */}
-        <div className={`absolute transition-all duration-300 rounded-full w-8 h-8 flex items-center justify-center font-bold text-xs border-2 shadow-md left-[45%] top-[56%] ${
-          selectedPatient?.id === 2 ? 'bg-[#1e5d48] text-white border-white ring-4 ring-[#1e5d48]/20 scale-110' : 'bg-white text-[#1e5d48] border-[#1e5d48]'
-        }`}>2</div>
-
-        {/* Цэг 3 (Б. Дорж) */}
-        <div className={`absolute transition-all duration-300 rounded-full w-8 h-8 flex items-center justify-center font-bold text-xs border-2 shadow-md left-[62%] top-[50%] ${
-          selectedPatient?.id === 3 ? 'bg-[#1e5d48] text-white border-white ring-4 ring-[#1e5d48]/20 scale-110' : 'bg-slate-300 text-slate-600 border-white'
-        }`}>3</div>
-      </div>
+      <iframe
+        key={mapSrc}
+        title="Өвчтөний байршлын Google Maps"
+        src={mapSrc}
+        className="h-full w-full border-0"
+        loading="lazy"
+        referrerPolicy="no-referrer-when-downgrade"
+      />
     </div>
   );
 }

@@ -2,9 +2,10 @@
 
 interface StatsCardProps {
   totalPatients: number;
+  onNewConsultation: () => void;
 }
 
-export function StatsCard({ totalPatients }: StatsCardProps) {
+export function StatsCard({ totalPatients, onNewConsultation }: StatsCardProps) {
   return (
     <div className="bg-white/80 backdrop-blur-md p-6 sm:p-10 rounded-[32px] border-2 border-white/50 flex flex-col justify-center flex-1 min-h-[220px]">
       <p className="text-[#94a3b8] text-[12px] font-bold uppercase tracking-wider mb-1">
@@ -30,7 +31,11 @@ export function StatsCard({ totalPatients }: StatsCardProps) {
           <button className="bg-[#1e5d48] hover:bg-[#164737] text-white px-6 py-3.5 rounded-xl font-bold text-[14px] flex items-center gap-2 shadow-md transition-all">
             🗺 Маршрут оновчлох
           </button>
-          <button className="bg-white hover:bg-slate-50 text-[#1e293b] px-6 py-3.5 rounded-xl font-bold text-[14px] flex items-center gap-1 border border-slate-200 shadow-sm transition-all">
+          <button
+            type="button"
+            onClick={onNewConsultation}
+            className="bg-white hover:bg-slate-50 text-[#1e293b] px-6 py-3.5 rounded-xl font-bold text-[14px] flex items-center gap-1 border border-slate-200 shadow-sm transition-all"
+          >
             <span className="text-lg leading-none">+</span> Шинэ үзлэг
           </button>
         </div>
