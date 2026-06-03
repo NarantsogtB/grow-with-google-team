@@ -7,7 +7,7 @@ interface PatientMapProps {
   selectedPatient: Patient | null;
 }
 
-export function PatientMap({ patients, selectedPatient }: PatientMapProps) {
+export function PatientMap({ selectedPatient }: PatientMapProps) {
   return (
     <div className="rounded-[32px] p-6 shadow-sm border-2 border-white/50 flex flex-col h-[480px] bg-white/80 backdrop-blur-md relative overflow-hidden w-full">
       

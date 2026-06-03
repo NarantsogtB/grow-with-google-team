@@ -1,12 +1,13 @@
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
 from app.database import Base, engine
-from app.routers import patients
+from app.routers.patients import router as patients_router
 from app.routers import hospital_router
 from app.routers.doctors import doctor_routers
 from app.routers.doctor_weekly_schedules import router as doctor_weekly_schedule_router
-from app.utils.logger import get_logger
 from app.utils.logger import get_logger
 from app.controllers.visit_slots.visit_slot_controller import router as visit_slot_router
 
@@ -22,7 +23,15 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Family medical Core API", lifespan=lifespan)
 
-app.include_router(patients.router)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.include_router(patients_router)
 app.include_router(doctor_routers.router)
 app.include_router(hospital_router.router)
 app.include_router(doctor_weekly_schedule_router)

@@ -15,7 +15,7 @@ class PatientBase(BaseModel):
 
 
 class PatientCreate(PatientBase):
-    pass
+    password: str  # Хэрэглэгч бүртгүүлэхэд фронтоос нууц үгийг нь хүлээж авна
 
 
 class PatientResponse(PatientBase):
@@ -24,3 +24,8 @@ class PatientResponse(PatientBase):
 
     class Config:
         from_attributes = True
+
+
+class LoginRequest(BaseModel):
+    phone_number: str
+    password: str
