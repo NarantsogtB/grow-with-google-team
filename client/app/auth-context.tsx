@@ -13,7 +13,7 @@ const AuthContext = createContext<{
   token: string | null;
   userName: string | null;
   userAddress: string | null;
-  loginSuccess: (token: string, name: string, address: string) => void; // 👈 Шинээр нэмэв
+  loginSuccess: (token: string, name: string, address: string) => void;
   logout: () => void;
 } | null>(null);
 
@@ -41,12 +41,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [auth.token, pathname, router]);
 
-  // Нэвтрэлт амжилттай болоход стейтийг тэр дороо шинэчлэх функц
   const loginSuccess = (token: string, name: string, address: string) => {
     localStorage.setItem('token', token);
     localStorage.setItem('user_name', name);
     localStorage.setItem('user_address', address);
-    
     setAuth({ token, userName: name, userAddress: address });
     router.push('/');
   };
