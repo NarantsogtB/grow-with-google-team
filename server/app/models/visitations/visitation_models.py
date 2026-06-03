@@ -21,14 +21,9 @@ class Visitation(Base):
 
     id = Column(UUID(as_uuid=True), default=uuid4, primary_key=True)
 
-    doctor_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    doctor_id = Column(UUID(as_uuid=True), ForeignKey("doctors.id"), nullable=False)
     patient_id = Column(UUID(as_uuid=True), ForeignKey("patients.id"), nullable=False)
-    slot_id = Column(
-        UUID(as_uuid=True),
-        ForeignKey("visit_slots.id"),
-        nullable=False,
-        unique=True
-    )
+    slot_id = Column(UUID(as_uuid=True), ForeignKey("visit_slots.id"), nullable=False, unique=True)
 
     status = Column(
         Enum(VisitStatus),
@@ -40,6 +35,6 @@ class Visitation(Base):
     sequence_order = Column(Integer, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
-    doctor = relationship("User")
+    doctor = relationship("Doctor")
     patient = relationship("Patient")
     slot = relationship("VisitSlot")

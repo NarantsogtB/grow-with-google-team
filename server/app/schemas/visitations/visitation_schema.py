@@ -1,8 +1,9 @@
 from datetime import datetime
-from typing import Optional, Literal
 from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
+
+from app.models.visitations.visitation_models import VisitStatus
 
 
 class VisitationBase(BaseModel):
@@ -16,19 +17,18 @@ class VisitationCreate(VisitationBase):
 
 
 class VisitationUpdateStatus(BaseModel):
-    status: Literal["pending", "confirmed", "canceled", "completed"]
+    status: VisitStatus
 
 
 class VisitationUpdateSequence(BaseModel):
-    sequence_order: int
+    sequence_order: int | None = None
 
 
 class VisitationResponse(VisitationBase):
     id: UUID
-    status: str
+    status: VisitStatus
     token: str
-    sequence_order: Optional[int] = None
+    sequence_order: int | None
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

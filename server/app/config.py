@@ -9,5 +9,7 @@ class Settings(BaseSettings):
     
     model_config = SettingsConfigDict(env_file='.env', env_file_encoding='utf-8')
     
+    telegram_bot_token: str | None = None
+    app_public_url: str | None = None
 
 settings = Settings()

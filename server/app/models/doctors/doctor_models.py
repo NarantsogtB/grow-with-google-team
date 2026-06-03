@@ -36,3 +36,6 @@ class Doctor(Base):
 
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, onupdate=func.now())
+    
+    visit_slots = relationship("VisitSlot", back_populates="doctor")
+    visitations = relationship("Visitation", back_populates="doctor")
