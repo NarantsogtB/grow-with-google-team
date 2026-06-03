@@ -2,9 +2,11 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '../auth-context';
 
 export default function LoginPage() {
   const router = useRouter();
+  const { loginSuccess } = useAuth();
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -26,18 +28,18 @@ export default function LoginPage() {
         throw new Error(data.detail || 'Нэвтрэхэд алдаа гарлаа');
       }
 
-      localStorage.setItem('token', data.access_token);
-      localStorage.setItem('user_name', data.full_name);
-      localStorage.setItem('user_address', data.address_text);
-      alert(`${data.full_name} амжилттай нэвтэрлээ!`);
-      router.push('/');
+      // ХУУЧИН localStorage.setItem-үүдийг устгаад, 
+      // манай шинэ loginSuccess-ийг дуудаж байна!
+      // Энэ нь стейтийг тэр дороо шинэчилж, хуудсыг автоматаар шилжүүлнэ.
+      loginSuccess(data.access_token, data.full_name, data.address_text);
+
     } catch (err) {
         if (err instanceof Error) {
           setError(err.message);
         } else {
           setError("Алдаа гарлаа");
         }
-      }
+    }
   };
 
   return (
@@ -84,7 +86,7 @@ export default function LoginPage() {
 
           <button
             type="submit"
-            className="w-full bg-[#1a5342] p-3 text-white font-medium rounded-xl hover:bg-[#134e4a] transition-colors shadow-sm mt-2 text-sm"
+            className="w-full bg-[#1a5342] p-3 text-white font-medium rounded-xl hover:bg-[#134e4a] transition-colors shadow-sm mt-2 text-sm cursor-pointer"
           >
             Нэвтрэх
           </button>
