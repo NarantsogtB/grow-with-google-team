@@ -1,9 +1,24 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useAuth } from "../app/auth-context";
 
 export function Header() {
   const { userName, userAddress, logout } = useAuth();
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsMounted(true);
+    }, 0);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Hydration алдаанаас сэргийлж хараахан mount болоогүй үед хоосон бүтэц буцаана
+  if (!isMounted) {
+    return <div className="w-full h-[76px] mb-6" />;
+  }
 
   return (
     <div className="w-full flex justify-between items-center bg-white/40 backdrop-blur-md px-6 py-4 rounded-2xl border-2 border-white/30 mb-6 shadow-sm">
@@ -25,7 +40,7 @@ export function Header() {
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-3">
             <div className="text-[12px]">
-              {/*  Жинхэнэ нэврэх нэрийг харуулах хэсэг */}
+              {/* Жинхэнэ нэврэх нэрийг харуулах хэсэг */}
               <div className="font-semibold text-gray-800">{userName || 'Хэрэглэгч'}</div>
               <p className="text-[#94a3b8] text-[10px] max-w-[150px] truncate" title={userAddress || ''}>
                 {userAddress || 'Хаяг бүртгэгдээгүй'}
@@ -40,7 +55,7 @@ export function Header() {
           {/* Системээс гарах товчлуур */}
           <button 
             onClick={logout}
-            className="rounded-xl bg-red-50 px-2.5 py-1.5 text-[11px] font-semibold text-red-600 hover:bg-red-100 transition-colors border border-red-200/50"
+            className="rounded-xl bg-red-50 px-2.5 py-1.5 text-[11px] font-semibold text-red-600 hover:bg-red-100 transition-colors border border-red-200/50 cursor-pointer"
           >
             Гарах
           </button>

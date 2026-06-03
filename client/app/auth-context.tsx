@@ -13,6 +13,7 @@ const AuthContext = createContext<{
   token: string | null;
   userName: string | null;
   userAddress: string | null;
+  loginSuccess: (token: string, name: string, address: string) => void; // 👈 Шинээр нэмэв
   logout: () => void;
 } | null>(null);
 
@@ -20,7 +21,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
 
-  // 1. Анх хуудас ачаалагдахад localStorage-оос датаг шууд уншиж State-ийг үүсгэнэ (useEffect ашиглахгүй)
   const [auth, setAuth] = useState<AuthState>(() => {
     if (typeof window !== 'undefined') {
       return {
@@ -32,7 +32,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return { token: null, userName: null, userAddress: null };
   });
 
-  // 2. Зөвхөн Рүүтинг (Хамгаалалт) хийх хэсгийг useEffect дотор үлдээнэ (State өөрчлөхгүй )
   useEffect(() => {
     if (!auth.token && pathname !== '/login' && pathname !== '/register') {
       router.push('/login');
@@ -41,6 +40,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       router.push('/');
     }
   }, [auth.token, pathname, router]);
+
+  // Нэвтрэлт амжилттай болоход стейтийг тэр дороо шинэчлэх функц
+  const loginSuccess = (token: string, name: string, address: string) => {
+    localStorage.setItem('token', token);
+    localStorage.setItem('user_name', name);
+    localStorage.setItem('user_address', address);
+    
+    setAuth({ token, userName: name, userAddress: address });
+    router.push('/');
+  };
 
   const logout = () => {
     localStorage.removeItem('token');
@@ -51,7 +60,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ ...auth, logout }}>
+    <AuthContext.Provider value={{ ...auth, loginSuccess, logout }}>
       {children}
     </AuthContext.Provider>
   );
