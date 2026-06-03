@@ -6,7 +6,8 @@ class Settings(BaseSettings):
     PROJECT_NAME:str = "Family-medical API"
     PROJECT_VERSION: str = "0.1.0"
     ENV: str
-    
+    GOOGLE_API_KEY: str = ""
+
     model_config = SettingsConfigDict(env_file='.env', env_file_encoding='utf-8')
     
 
