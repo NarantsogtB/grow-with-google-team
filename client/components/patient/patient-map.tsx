@@ -1,6 +1,6 @@
 "use client";
 
-import { Patient } from "@/hooks/use-patients";
+import type { Patient } from "@/hooks/use-patients";
 
 interface PatientMapProps {
   patients: Patient[];
@@ -41,7 +41,7 @@ export function PatientMap({ patients, selectedPatient, isRouteOptimized = false
   const mapQuery = encodeURIComponent(
     selectedPatient?.address
       ? `${selectedPatient.address}, Ulaanbaatar, Mongolia`
-      : "Ulaanbaatar, Mongolia"
+      : "Ulaanbaatar, Mongolia",
   );
 
   const mapSrc = isRouteOptimized && patients.length > 0

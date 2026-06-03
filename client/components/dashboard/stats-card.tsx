@@ -7,44 +7,40 @@ interface StatsCardProps {
 
 export function StatsCard({ totalPatients, onNewConsultation }: StatsCardProps) {
   return (
-    <div className="bg-white/80 backdrop-blur-md p-6 sm:p-10 rounded-[32px] border-2 border-white/50 flex flex-col justify-center flex-1 min-h-[220px]">
-      <p className="text-[#94a3b8] text-[12px] font-bold uppercase tracking-wider mb-1">
+    <div className="flex min-h-[220px] flex-1 flex-col justify-center rounded-[32px] border-2 border-white/50 bg-white/80 p-6 shadow-sm backdrop-blur-md sm:p-10">
+      <p className="mb-1 text-[12px] font-bold uppercase tracking-wider text-[#94a3b8]">
         2026.05.10 · БЯМБА
       </p>
-      
-      <div className="flex flex-col sm:flex-row sm:items-baseline gap-3 mb-6">
+
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-baseline">
         <div className="flex items-baseline gap-2">
-          <span className="text-6xl sm:text-[90px] font-black leading-none tracking-tighter text-[#1e293b]">
+          <span className="text-6xl font-black leading-none tracking-tighter text-[#1e293b] sm:text-[90px]">
             {totalPatients}
           </span>
           <span className="text-xl font-bold text-[#1e293b]">айл</span>
         </div>
-        <p className="sm:ml-6 text-[#64748b] text-sm sm:text-base font-medium leading-relaxed">
+        <p className="text-sm font-medium leading-relaxed text-[#64748b] sm:ml-6 sm:text-base">
           5 баталсан · 2 хүлээгдэж · 1 урьдчилсан яаралтай
         </p>
       </div>
 
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 w-full mt-auto">
-        
-        {/* Зүүн тал: Хоёр товчлуур */}
+      <div className="mt-auto flex w-full flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div className="flex items-center gap-3">
-          <button className="bg-[#1e5d48] hover:bg-[#164737] text-white px-6 py-3.5 rounded-xl font-bold text-[14px] flex items-center gap-2 shadow-md transition-all">
+          <button className="flex items-center gap-2 rounded-xl bg-[#1e5d48] px-6 py-3.5 text-[14px] font-bold text-white shadow-md transition-all hover:bg-[#164737]">
             🗺 Маршрут оновчлох
           </button>
           <button
             type="button"
             onClick={onNewConsultation}
-            className="bg-white hover:bg-slate-50 text-[#1e293b] px-6 py-3.5 rounded-xl font-bold text-[14px] flex items-center gap-1 border border-slate-200 shadow-sm transition-all"
+            className="flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-6 py-3.5 text-[14px] font-bold text-[#1e293b] shadow-sm transition-all hover:bg-slate-50"
           >
             <span className="text-lg leading-none">+</span> Шинэ үзлэг
           </button>
         </div>
 
-        {/* Баруун тал: Сүүлд оновчилсон цаг */}
-        <span className="text-[12px] text-[#94a3b8] font-medium pb-1">
+        <span className="pb-1 text-[12px] font-medium text-[#94a3b8]">
           сүүлд оновчилсон 08:42
         </span>
-
       </div>
     </div>
   );
