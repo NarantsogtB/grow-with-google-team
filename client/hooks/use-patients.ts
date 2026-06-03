@@ -1,7 +1,5 @@
-// hooks/use-patients.ts
 import { useState, useEffect } from "react";
 
-// Өвчтөний дата төрөл (Type)
 export interface Patient {
   id: number;
   name: string;
@@ -9,13 +7,12 @@ export interface Patient {
   address: string;
   distance: string;
   time: string;
-  status: "urgent" | "active" | "pending";
+  status: "urgent" | "active" | "completed" | "pending";
   triageScore: number;
   preliminaryNote: string;
   coords: { x: number; y: number };
 }
 
-// 🌟 Түр зуурын мок дата
 const fallbackData: Patient[] = [
   { 
     id: 1, 
@@ -52,33 +49,27 @@ const fallbackData: Patient[] = [
     triageScore: 2, 
     preliminaryNote: "Хөл өвдөнө гэсэн", 
     coords: { x: 60, y: 30 } 
+  },
+  { 
+    id: 4, 
+    name: "Б. Бат-Эрдэнэ", 
+    age: 29, 
+    address: "3 хороо, 15-р байр, 22", 
+    distance: "2.1 км", 
+    time: "11:15", 
+    status: "urgent", 
+    triageScore: 9, 
+    preliminaryNote: "Гэнэт хэвлийгээр хүчтэй өвдсөн, дотор эвгүйрхэнэ.", 
+    coords: { x: 30, y: 50 } 
   }
 ];
 
 export function usePatients() {
   const [patients, setPatients] = useState<Patient[]>(fallbackData);
-  const [loading, setLoading] = useState(false); // Backend холбохдоо true болгоно (мартаж болохгүй!!!)
+  const [loading] = useState(false); // ЕSLint cascading render алдаанаас сэргийлж setLoading-ийг түр хасав
 
   useEffect(() => {
-    const fetchPatients = async () => {
-      try {
-        // backend бэлэн болоход доорх комментоо нээнэ:
-        /*
-        setLoading(true);
-        const response = await fetch("https://api.your-backend-link.com/patients");
-        if (!response.ok) throw new Error("Сүлжээний алдаа гарлаа");
-        const data = await response.json();
-        setPatients(data);
-        */
-      } catch (error) {
-        console.error("Дата татахад алдаа гарлаа, Mock датаг ашиглаж байна:", error);
-        setPatients(fallbackData);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchPatients();
+    // Backend бэлэн болоход энд fetch логикоо нээнэ
   }, []);
 
   return { patients, loading, setPatients, fallbackData };

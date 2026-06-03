@@ -13,73 +13,61 @@ export function PatientItemList({
   selectedPatient,
   onSelectPatient,
 }: PatientItemListProps) {
+  
+  // Төлөвөөс хамаарч өнгийг динамикаар оноох шидэт функц
+  const getStatusStyles = (status: Patient["status"]) => {
+    switch (status) {
+      case "urgent": return "bg-red-50 text-red-700 border-red-200/60";
+      case "active": return "bg-emerald-50 text-emerald-700 border-emerald-200/60";
+      case "completed": return "bg-slate-50 text-slate-500 border-slate-200/60";
+      default: return "bg-amber-50 text-amber-700 border-amber-200/60";
+    }
+  };
+
+  const getStatusLabel = (status: Patient["status"]) => {
+    switch (status) {
+      case "urgent": return "Яаралтай";
+      case "active": return "Үзэж буй";
+      case "completed": return "Үзсэн";
+      default: return "Хүлээж буй";
+    }
+  };
+
   return (
-    <div className="bg-white/80 backdrop-blur-md h-full flex flex-col flex-1">
-      {/* Жагсаалтын толгой хэсэг */}
-      <div className="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/40">
-        <h3 className="font-black text-[13px] text-[#475569] uppercase tracking-wider">
-          Өнөөдрийн жагсаалт
-        </h3>
-        <span className="text-xs font-bold text-[#64748b] bg-slate-100 px-2.5 py-1 rounded-full">
-          {patients.length} айл
-        </span>
+    <div className="bg-white flex flex-col h-full rounded-[32px] overflow-hidden">
+      {/* Толгой хэсэг */}
+      <div className="p-6 border-b border-slate-100/80">
+        <h3 className="font-black text-lg text-slate-800">Өнөөдрийн жагсаалт</h3>
+        <p className="text-xs font-medium text-slate-400 mt-0.5">Нийт {patients.length} өвчтөн байна</p>
       </div>
 
-      {/* Өвчтөнүүдийн жагсаалт урсдаг хэсэг */}
-      <div className="divide-y divide-slate-100/60 overflow-y-auto flex-1 max-h-[420px]">
+      {/* max-h-[360px] болгож өөрчилснөөр яг 4 хүн дэлгэц дээр бүтэн харагдах ба 5 дахь хүнээс scroll хийнэ */}
+      <div className="divide-y divide-slate-100/60 overflow-y-auto flex-1 max-h-[360px] pr-1 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
         {patients.map((patient, index) => {
           const isActive = selectedPatient?.id === patient.id;
-
-          // Профайл дээр харагдах өнгөнүүд
-          const statusColors: { [key: number]: string } = {
-            1: "bg-red-500",    // Д. Мөнхбат - Улаан
-            2: "bg-teal-500",   // Ц. Оюунчимэг - Ногоон
-            3: "bg-slate-400",  // Б. Дорж - Саарал
-            4: "bg-teal-500",
-            5: "bg-orange-500",
-            6: "bg-teal-500",
-            7: "bg-teal-500",
-            8: "bg-slate-400"
-          };
-
           return (
             <div
               key={patient.id}
               onClick={() => onSelectPatient(patient)}
-              className={`relative pl-8 pr-5 py-4 flex items-center justify-between cursor-pointer transition-all duration-200 ${
-                isActive
-                  ? "bg-[#e2f0ec]/70" // Идэвхтэй үед зөөлөн ногоон туяатай дэвсгэр
-                  : "hover:bg-slate-50/60 bg-white/10"
+              className={`p-5 flex items-center justify-between cursor-pointer transition-all ${
+                isActive ? "bg-slate-50/80 font-bold" : "hover:bg-slate-50/40"
               }`}
             >
-              {/* Идэвхтэй үед зүүн талд харагдах Босоо Ногоон Зураас */}
-              {isActive && (
-                <div className="absolute left-0 top-0 bottom-0 w-[4px] bg-[#1e5d48] rounded-r-md" />
-              )}
-
               <div className="flex items-center gap-4">
-                {/* Мөрийн дугаар */}
-                <span className="text-[13px] text-[#94a3b8] font-bold w-4 text-center">
-                  {index + 1}
+                <span className="text-xs font-black text-slate-300 w-5">
+                  #{index + 1}
                 </span>
-                
-                {/* Өвчтөний мэдээлэл */}
                 <div>
-                  <div className="flex items-center gap-2">
-                    <span className={`w-2 h-2 rounded-full shrink-0 ${statusColors[patient.id] || "bg-slate-400"}`} />
-                    <p className="font-black text-[14px] text-[#1e293b] tracking-tight">
-                      {patient.name}
-                    </p>
-                  </div>
-                  <p className="text-[11px] text-[#64748b] mt-0.5 font-medium leading-tight">
-                    {patient.address}
+                  <h4 className="text-sm font-bold text-slate-700">{patient.name}</h4>
+                  <p className="text-xs font-medium text-slate-400 mt-0.5">
+                    {patient.age} настай · {patient.time} ({patient.distance})
                   </p>
                 </div>
               </div>
 
-              {/* Очих цаг */}
-              <span className="text-xs font-bold text-[#64748b] tracking-tight shrink-0">
-                {patient.time}
+              {/* Зөв тодорхойлогдсон 4 төлөвийн статус */}
+              <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full border ${getStatusStyles(patient.status)}`}>
+                {getStatusLabel(patient.status)}
               </span>
             </div>
           );
