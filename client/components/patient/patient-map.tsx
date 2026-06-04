@@ -38,15 +38,13 @@ function buildRouteUrl(patients: Patient[]): string {
 export function PatientMap({ patients, selectedPatient, isRouteOptimized = false }: PatientMapProps) {
   const sortedPatients = sortByPriority(patients);
 
-  const mapQuery = encodeURIComponent(
-    selectedPatient?.address
-      ? `${selectedPatient.address}, Ulaanbaatar, Mongolia`
-      : "Ulaanbaatar, Mongolia",
-  );
+  const encode = (addr: string) => encodeURIComponent(`${addr}, Ulaanbaatar`);
 
   const mapSrc = isRouteOptimized && patients.length > 0
     ? buildRouteUrl(patients)
-    : `https://www.google.com/maps?q=${mapQuery}&output=embed`;
+    : selectedPatient
+    ? `https://maps.google.com/maps?daddr=${encode(selectedPatient.address)}&output=embed`
+    : `https://www.google.com/maps?q=${encodeURIComponent("Ulaanbaatar, Mongolia")}&output=embed`;
 
   return (
     <div className="relative flex h-[480px] w-full flex-col overflow-hidden rounded-[32px] border-2 border-white/50 bg-white/80 shadow-sm backdrop-blur-md">

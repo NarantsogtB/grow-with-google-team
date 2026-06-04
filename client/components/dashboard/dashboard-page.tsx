@@ -17,8 +17,23 @@ export function DashboardPage() {
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(
     fallbackData[1],
   );
+
+  const handleSelectPatient = (patient: Patient) => {
+    setSelectedPatient(patient);
+    setIsRouteOptimized(false);
+  };
   const [isConsulting, setIsConsulting] = useState(false);
   const [isHealthCheckOpen, setIsHealthCheckOpen] = useState(false);
+  const [isRouteOptimized, setIsRouteOptimized] = useState(false);
+  const [lastOptimizedTime, setLastOptimizedTime] = useState<string | null>(null);
+
+  const handleOptimizeRoute = () => {
+    setIsRouteOptimized(true);
+    const now = new Date();
+    setLastOptimizedTime(
+      `${now.getHours().toString().padStart(2, "0")}:${now.getMinutes().toString().padStart(2, "0")}`
+    );
+  };
 
   if (loading) {
     return (
@@ -51,6 +66,9 @@ export function DashboardPage() {
             <StatsCard
               totalPatients={patients.length}
               onNewConsultation={() => setIsHealthCheckOpen(true)}
+              onOptimizeRoute={handleOptimizeRoute}
+              isRouteOptimized={isRouteOptimized}
+              lastOptimizedTime={lastOptimizedTime}
             />
           </div>
           <div className="flex flex-col lg:col-span-4">
@@ -64,12 +82,12 @@ export function DashboardPage() {
               <PatientItemList
                 patients={patients}
                 selectedPatient={selectedPatient}
-                onSelectPatient={setSelectedPatient}
+                onSelectPatient={handleSelectPatient}
               />
             </div>
 
             <div className="flex flex-col overflow-hidden rounded-[32px] border-2 border-white/50 shadow-sm md:col-span-7">
-              <PatientMap patients={patients} selectedPatient={selectedPatient} />
+              <PatientMap patients={patients} selectedPatient={selectedPatient} isRouteOptimized={isRouteOptimized} />
             </div>
           </div>
 
