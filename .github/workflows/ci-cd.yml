@@ -98,7 +98,7 @@ jobs:
     env:
       # These are TEST-ONLY values — not real secrets
       # SQLite in-memory: no database server needed in CI
-      DATABASE_URL: sqlite+aiosqlite:///:memory:
+      DATABASE_URL: "sqlite+aiosqlite:///:memory:"
       JWT_SECRET: test-secret-key-for-ci-only-not-used-in-production
       # Fake API keys — tests mock these anyway (see test files)
       GOOGLE_API_KEY: fake-gemini-key-mocked-in-tests
