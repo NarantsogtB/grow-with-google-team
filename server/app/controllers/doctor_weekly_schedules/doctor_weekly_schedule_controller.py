@@ -1,30 +1,13 @@
 from uuid import UUID
 
-from fastapi import HTTPException
-from sqlalchemy.orm import Session
-from app.models.doctors.doctor_models import Doctor
 from app.models.doctor_weekly_schedules import (
     DoctorWeeklySchedule,
     DoctorWeeklyScheduleCreate,
     DoctorWeeklyScheduleUpdate,
 )
-
-
-def create_doctor_weekly_schedule(
-    db: Session,
-    schedule_data: DoctorWeeklyScheduleCreate,
-):
-    """
-    Эмчийн 7 хоног бүр давтагдах гэрийн эргэлтийн хуваарь үүсгэнэ.
-    """
-
-    new_schedule = DoctorWeeklySchedule(**schedule_data.model_dump())
-
-    db.add(new_schedule)
-    db.commit()
-    db.refresh(new_schedule)
-
-    return new_schedule
+from app.models.doctors.doctor_models import Doctor
+from fastapi import HTTPException
+from sqlalchemy.orm import Session
 
 
 def get_doctor_weekly_schedules(db: Session):
@@ -43,11 +26,7 @@ def get_doctor_weekly_schedule_by_id(
     ID-аар нэг weekly schedule хайж авна.
     """
 
-    schedule = (
-        db.query(DoctorWeeklySchedule)
-        .filter(DoctorWeeklySchedule.id == schedule_id)
-        .first()
-    )
+    schedule = db.query(DoctorWeeklySchedule).filter(DoctorWeeklySchedule.id == schedule_id).first()
 
     if not schedule:
         raise HTTPException(
@@ -66,11 +45,7 @@ def get_doctor_weekly_schedules_by_doctor_id(
     Тухайн эмчид хамаарах weekly schedule-үүдийг авна.
     """
 
-    return (
-        db.query(DoctorWeeklySchedule)
-        .filter(DoctorWeeklySchedule.doctor_id == doctor_id)
-        .all()
-    )
+    return db.query(DoctorWeeklySchedule).filter(DoctorWeeklySchedule.doctor_id == doctor_id).all()
 
 
 def update_doctor_weekly_schedule(
@@ -111,7 +86,8 @@ def delete_doctor_weekly_schedule(
     return {
         "message": "Doctor weekly schedule deleted successfully",
     }
-    
+
+
 def create_doctor_weekly_schedule(
     db: Session,
     schedule_data: DoctorWeeklyScheduleCreate,
@@ -120,11 +96,7 @@ def create_doctor_weekly_schedule(
     Эмчийн 7 хоног бүр давтагдах гэрийн эргэлтийн хуваарь үүсгэнэ.
     """
 
-    doctor = (
-        db.query(Doctor)
-        .filter(Doctor.id == schedule_data.doctor_id)
-        .first()
-    )
+    doctor = db.query(Doctor).filter(Doctor.id == schedule_data.doctor_id).first()
 
     if not doctor:
         raise HTTPException(

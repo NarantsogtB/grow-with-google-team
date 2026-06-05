@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: client
+        working-directory: admin
     steps:
       - uses: actions/checkout@v5
 
@@ -45,8 +45,12 @@ jobs:
     env:
       TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/family_medical_test_db
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/family_medical_test_db
+      DATABASE: postgresql://postgres:postgres@localhost:5432/family_medical_test_db
       JWT_SECRET: test-secret
       ENV: test
+      GOOGLE_API_KEY: fake-gemini-key-mocked-in-tests
+      WHAT3WORDS_API_KEY: fake-w3w-key-mocked-in-tests
+      TELEGRAM_BOT_TOKEN: ""
 
     defaults:
       run:
@@ -68,7 +72,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: client
+        working-directory: admin
     steps:
       - uses: actions/checkout@v5
 

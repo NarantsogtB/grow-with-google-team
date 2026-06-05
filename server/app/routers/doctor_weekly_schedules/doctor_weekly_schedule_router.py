@@ -1,23 +1,21 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
-
-from app.database import get_db
 from app.controllers.doctor_weekly_schedules import (
     create_doctor_weekly_schedule,
-    get_doctor_weekly_schedules,
+    delete_doctor_weekly_schedule,
     get_doctor_weekly_schedule_by_id,
+    get_doctor_weekly_schedules,
     get_doctor_weekly_schedules_by_doctor_id,
     update_doctor_weekly_schedule,
-    delete_doctor_weekly_schedule,
 )
+from app.database import get_db
 from app.models.doctor_weekly_schedules import (
     DoctorWeeklyScheduleCreate,
-    DoctorWeeklyScheduleUpdate,
     DoctorWeeklyScheduleResponse,
+    DoctorWeeklyScheduleUpdate,
 )
-
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
 
 router = APIRouter(
     prefix="/doctor-weekly-schedules",
@@ -35,6 +33,7 @@ def create_schedule(
     """
 
     return create_doctor_weekly_schedule(db, schedule_data)
+
 
 @router.get("/", response_model=list[DoctorWeeklyScheduleResponse])
 def list_schedules(db: Session = Depends(get_db)):
@@ -55,6 +54,7 @@ def get_schedule(
     db: Session = Depends(get_db),
 ):
     return get_doctor_weekly_schedule_by_id(db, schedule_id)
+
 
 @router.put("/{schedule_id}", response_model=DoctorWeeklyScheduleResponse)
 def update_schedule(

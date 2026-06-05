@@ -1,7 +1,8 @@
+from typing import List, Tuple
+
 from app.database import Database
-from app.utils.logger import logger
 from app.models import Doctor
-from typing import Tuple, List
+from app.utils.logger import logger
 
 
 def get_doctors(db: Database, page: int = 1, size: int = 10) -> Tuple[List[Doctor], int]:

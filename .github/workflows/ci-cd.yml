@@ -1,0 +1,233 @@
+# =============================================================================
+# CI/CD PIPELINE — .github/workflows/ci-cd.yml
+# =============================================================================
+# GitHub Actions pipeline that runs automatically on:
+#   - Every push to the `main` branch
+#   - Every pull request targeting `main`
+#
+# PIPELINE STAGES (in order, each gates the next):
+#   1. lint   → Code style and formatting check (fast, cheap, fails early)
+#   2. test   → Run pytest suite with coverage (medium speed)
+#   3. build  → Build Docker image (only on main branch)
+#   4. deploy → Deploy to GCP VM via SSH (only on main branch)
+#
+# WHY THIS ORDER?
+# Lint is cheapest (~30 seconds). If the developer forgot a trailing space,
+# we fail fast without wasting time running tests or building Docker images.
+# Tests catch bugs before they reach production.
+# Build validates the Dockerfile is correct.
+# Deploy only runs if ALL previous steps passed.
+#
+# REQUIRED GITHUB SECRETS (set at: Repo → Settings → Secrets → Actions):
+#   GCP_VM_HOST          → The IP address of your Google Cloud VM
+#   GCP_VM_USER          → SSH username (usually "ubuntu" or your VM user)
+#   GCP_SSH_PRIVATE_KEY  → Private SSH key for VM access
+#                         Generate: ssh-keygen -t ed25519 -C "github-actions"
+#                         Add public key to VM's ~/.ssh/authorized_keys
+#   DATABASE_URL         → postgresql+asyncpg://user:pass@host:5432/dbname
+#   JWT_SECRET           → 64-char random string (python -c "import secrets; print(secrets.token_hex(32))")
+#   GOOGLE_API_KEY       → Gemini API key from https://aistudio.google.com
+#   WHAT3WORDS_API_KEY   → W3W API key from https://developer.what3words.com
+#   TELEGRAM_BOT_TOKEN   → Bot token from @BotFather on Telegram
+# =============================================================================
+
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  # GitHub Container Registry — stores Docker images automatically
+  # Format: ghcr.io/<owner>/<repo>/server:latest
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}/server
+
+# ── STAGE 1: LINT ─────────────────────────────────────────────────────────────
+jobs:
+  lint:
+    name: "Lint (black + isort + flake8)"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Cache pip packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: lint-${{ hashFiles('server/requirements.txt') }}
+
+      - name: Install lint tools
+        run: pip install black==24.10.0 isort==5.13.2 flake8==7.1.1
+
+      # black --check: does NOT modify files, just exits with error if formatting differs
+      # This forces developers to run `black .` before pushing
+      - name: Check formatting with black
+        run: black --check --line-length=100 server/app server/tests
+
+      # isort --check-only: verifies imports are sorted
+      # Consistent import order prevents merge conflicts and improves readability
+      - name: Check import order with isort
+        run: isort --check-only --profile=black --line-length=100 server/app server/tests
+
+      # flake8: checks for syntax errors, undefined variables, style violations
+      # E501 (line too long) ignored because black handles line length
+      # W503 (line break before binary operator) ignored (conflicts with black)
+      - name: Check code style with flake8
+        run: |
+          flake8 server/app server/tests \
+            --max-line-length=100 \
+            --ignore=E501,W503 \
+            --exclude=__pycache__,.venv,migrations
+
+# ── STAGE 2: TEST ─────────────────────────────────────────────────────────────
+  test:
+    name: "Test (pytest + coverage)"
+    runs-on: ubuntu-latest
+    needs: lint  # Only run if lint passes
+
+    env:
+      # These are TEST-ONLY values — not real secrets
+      # SQLite in-memory: no database server needed in CI
+      DATABASE_URL: "sqlite+aiosqlite:///:memory:"
+      DATABASE: "sqlite+aiosqlite:///:memory:"
+      JWT_SECRET: test-secret-key-for-ci-only-not-used-in-production
+      # Fake API keys — tests mock these anyway (see test files)
+      GOOGLE_API_KEY: fake-gemini-key-mocked-in-tests
+      WHAT3WORDS_API_KEY: fake-w3w-key-mocked-in-tests
+      TELEGRAM_BOT_TOKEN: ""
+      ENV: test
+      
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Cache pip packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: test-${{ hashFiles('server/requirements.txt') }}
+
+      - name: Install dependencies
+        run: |
+          cd server
+          pip install -r requirements.txt
+
+      - name: Run pytest with coverage
+        run: |
+          cd server
+          pytest tests/ \
+            --asyncio-mode=auto \
+            --cov=app \
+            --cov-report=xml:coverage.xml \
+            --cov-report=term-missing \
+            --cov-fail-under=60
+          # --cov-fail-under=60: CI fails if test coverage drops below 60%
+          # Increase this threshold as you add more tests
+
+      - name: Upload coverage report to Codecov
+        # Codecov provides a visual coverage dashboard for free
+        # Sign up at https://codecov.io and connect your GitHub repo
+        uses: codecov/codecov-action@v4
+        with:
+          file: server/coverage.xml
+          fail_ci_if_error: false  # Don't fail CI if Codecov is unreachable
+
+# ── STAGE 3: BUILD DOCKER IMAGE ───────────────────────────────────────────────
+  build:
+    name: "Build Docker Image"
+    runs-on: ubuntu-latest
+    needs: test  # Only build if tests pass
+
+    # Only build on pushes to main (not on pull requests)
+    # We don't want to push an image for every PR — just the final merged code
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    # Permission to push to GitHub Container Registry
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}  # Auto-provided by GitHub Actions
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./server        # Build context = server/ directory
+          push: true               # Push to registry after building
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          # Tagging with git SHA allows rolling back: docker run image:abc123def
+          cache-from: type=gha    # Use GitHub Actions cache to speed up builds
+          cache-to: type=gha,mode=max
+
+# ── STAGE 4: DEPLOY TO GCP VM ─────────────────────────────────────────────────
+  deploy:
+    name: "Deploy to GCP VM"
+    runs-on: ubuntu-latest
+    needs: build  # Only deploy if build succeeds
+
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Deploy via SSH to GCP VM
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.GCP_VM_HOST }}
+          username: ${{ secrets.GCP_VM_USER }}
+          key: ${{ secrets.GCP_SSH_PRIVATE_KEY }}
+          # This script runs ON the GCP VM (not locally)
+          script: |
+            # Login to GitHub Container Registry from the VM
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+            # Pull the latest image
+            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+
+            # Stop and remove the old container gracefully
+            # `|| true` prevents the script from failing if container doesn't exist yet
+            docker stop familydoc-api || true
+            docker rm familydoc-api || true
+
+            # Start the new container with production environment variables
+            docker run -d \
+              --name familydoc-api \
+              --restart=unless-stopped \
+              -p 8000:8000 \
+              -e DATABASE_URL="${{ secrets.DATABASE_URL }}" \
+              -e JWT_SECRET="${{ secrets.JWT_SECRET }}" \
+              -e GOOGLE_API_KEY="${{ secrets.GOOGLE_API_KEY }}" \
+              -e WHAT3WORDS_API_KEY="${{ secrets.WHAT3WORDS_API_KEY }}" \
+              -e TELEGRAM_BOT_TOKEN="${{ secrets.TELEGRAM_BOT_TOKEN }}" \
+              -e ENV=production \
+              ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+
+            # Verify the container started correctly
+            sleep 5
+            docker ps | grep familydoc-api
+            echo "Deployment complete!"
