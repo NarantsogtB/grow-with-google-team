@@ -6,7 +6,6 @@ export const profileUpdateSchema = z.object({
     .string()
     .min(5, "Хаягаа бүрэн бичнэ үү")
     .optional(),
-  telegram_chat_id: z.string().optional(),
 });
 
 export type ProfileUpdateFormValues = z.infer<typeof profileUpdateSchema>;

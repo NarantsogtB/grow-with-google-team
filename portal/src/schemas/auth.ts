@@ -18,7 +18,6 @@ export const registerSchema = z
     password: z.string().min(6, "Нууц үг 6-аас дээш тэмдэгт байх ёстой"),
     confirm_password: z.string().min(1, "Нууц үгээ давтан оруулна уу"),
     address_text: z.string().min(5, "Хаягаа бүрэн бичнэ үү"),
-    telegram_chat_id: z.string().optional(),
     hospital_id: z.string().min(1, "Харьяа өрхийн эмнэлэгээ сонгоно уу"),
   })
   .refine((data) => data.password === data.confirm_password, {

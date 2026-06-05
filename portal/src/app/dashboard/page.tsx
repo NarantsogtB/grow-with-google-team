@@ -89,7 +89,6 @@ export default function DashboardPage() {
     reset({
       full_name: profile?.full_name ?? "",
       address_text: profile?.address_text ?? "",
-      telegram_chat_id: profile?.telegram_chat_id ?? "",
     });
     setEditOpen(true);
   };
@@ -99,7 +98,6 @@ export default function DashboardPage() {
       const updated = await api.put<PatientResponse>("/api/v1/patients/me", {
         full_name: values.full_name || undefined,
         address_text: values.address_text || undefined,
-        telegram_chat_id: values.telegram_chat_id || undefined,
       });
       setProfile(updated);
       updatePatient(updated);
@@ -196,11 +194,26 @@ export default function DashboardPage() {
                       label="Харьяа өрхийн эмнэлэг"
                       value={session?.hospital_name ?? "—"}
                     />
-                    <ProfileField
-                      icon={MessageCircle}
-                      label="Telegram"
-                      value={profile?.telegram_chat_id}
-                    />
+                    <div className="flex items-start gap-3 py-3">
+                      <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center shrink-0 mt-0.5">
+                        <MessageCircle className="w-4 h-4 text-blue-600" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-[11px] text-slate-400 font-medium uppercase tracking-wide mb-0.5">
+                          Telegram
+                        </p>
+                        {profile?.telegram_chat_id ? (
+                          <p className="text-[14px] text-emerald-600 font-medium">✅ Холбогдсон</p>
+                        ) : (
+                          <div className="text-[12px] text-slate-500 space-y-0.5">
+                            <p>Холбогдоогүй. Bot-д дараах командыг явуулна уу:</p>
+                            <code className="block bg-slate-100 rounded px-2 py-0.5 text-slate-700 font-mono text-[11px]">
+                              /link {profile?.phone_number ?? "<утасны дугаар>"}
+                            </code>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
@@ -304,19 +317,6 @@ export default function DashboardPage() {
                   {errors.address_text.message}
                 </p>
               )}
-            </div>
-
-            <div>
-              <label className="block text-[13px] font-medium text-slate-700 mb-1.5">
-                Telegram{" "}
-                <span className="text-slate-400 font-normal">(заавал биш)</span>
-              </label>
-              <input
-                type="text"
-                placeholder="@username"
-                {...register("telegram_chat_id")}
-                className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-              />
             </div>
 
             <DialogFooter className="mt-2">
