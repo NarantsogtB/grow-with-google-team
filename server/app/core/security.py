@@ -28,10 +28,9 @@
 
 from datetime import datetime, timedelta, timezone
 
-from jose import JWTError, jwt
-from passlib.context import CryptContext
-
 from app.core.config import settings
+from jose import jwt
+from passlib.context import CryptContext
 
 # CryptContext manages password hashing schemes.
 # schemes=["bcrypt"] means we use bcrypt for new hashes.
@@ -87,9 +86,7 @@ def create_access_token(subject: str) -> str:
         # "exp" (expiry) is a Unix timestamp; jose will reject tokens past this time
         "exp": expire,
     }
-    return jwt.encode(
-        payload, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM
-    )
+    return jwt.encode(payload, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
 
 
 def decode_access_token(token: str) -> str:

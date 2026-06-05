@@ -2,9 +2,6 @@ import asyncio
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
 
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-
 # Import models to register them in Base.metadata BEFORE create_all is called.
 # This is critical: if models are not imported, Alembic and create_all won't
 # know these tables exist.
@@ -18,9 +15,15 @@ from app.api.v1.router import api_router
 from app.core.config import settings
 from app.core.database import AsyncSessionLocal
 from app.database import Base, engine
+from app.routers import hospital_router
+from app.routers.doctor_weekly_schedules import router as legacy_schedule_router
+from app.routers.doctors import doctor_routers
+from app.routers.patients import router as legacy_patients_router
 from app.services.notification_service import bulk_send_reminders
 from app.services.visit_service import send_day_before_confirmations
 from app.utils.logger import get_logger
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 logger = get_logger("app")
 
@@ -85,7 +88,7 @@ async def lifespan(app: FastAPI):
             pass
 
 
-app = FastAPI(
+app = FastAPI(  # noqa: F811
     title=settings.PROJECT_NAME,
     version=settings.PROJECT_VERSION,
     lifespan=lifespan,
@@ -112,15 +115,9 @@ app.add_middleware(
 # e.g. POST /api/v1/patients/  GET /api/v1/doctors/  POST /api/v1/agent/chat
 app.include_router(api_router, prefix="/api/v1")
 
-from app.routers import hospital_router
-from app.routers.doctor_weekly_schedules import \
-    router as legacy_schedule_router
-from app.routers.doctors import doctor_routers
 # ── Legacy routes (kept for backward compatibility during migration) ───────────
 # The frontend currently calls /patients/login and /patients/ directly.
 # Once the frontend is updated to use /api/v1/patients/, remove these.
-from app.routers.patients import router as legacy_patients_router
-
 app.include_router(legacy_patients_router)  # /patients/
 app.include_router(doctor_routers.router)  # /doctors/
 app.include_router(hospital_router.router)  # /hospitals/

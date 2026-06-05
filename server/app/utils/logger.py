@@ -6,9 +6,7 @@ _root_logger = logging.getLogger("grow-with-google-team")
 _root_logger.setLevel(getattr(logging, LOG_LEVEL, logging.INFO))
 
 if not _root_logger.handlers:
-    _formatter = logging.Formatter(
-        "[%(asctime)s] %(levelname)s - %(name)s - %(message)s"
-    )
+    _formatter = logging.Formatter("[%(asctime)s] %(levelname)s - %(name)s - %(message)s")
 
     _console_handler = logging.StreamHandler()
     _console_handler.setFormatter(_formatter)

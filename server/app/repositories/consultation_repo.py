@@ -1,11 +1,10 @@
-from typing import List, Optional, Tuple
+from typing import List, Tuple
 from uuid import UUID
-
-from sqlalchemy import func, select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.consultation import Consultation
 from app.repositories.base import BaseRepository
+from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class ConsultationRepository(BaseRepository[Consultation]):
@@ -19,9 +18,7 @@ class ConsultationRepository(BaseRepository[Consultation]):
         where = Consultation.doctor_id == doctor_id
 
         total = (
-            await self.db.execute(
-                select(func.count()).select_from(Consultation).where(where)
-            )
+            await self.db.execute(select(func.count()).select_from(Consultation).where(where))
         ).scalar()
 
         items = list(
@@ -44,9 +41,7 @@ class ConsultationRepository(BaseRepository[Consultation]):
     ) -> Tuple[List[Consultation], int]:
         offset = (page - 1) * size
 
-        total = (
-            await self.db.execute(select(func.count()).select_from(Consultation))
-        ).scalar()
+        total = (await self.db.execute(select(func.count()).select_from(Consultation))).scalar()
 
         items = list(
             (

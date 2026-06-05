@@ -3,12 +3,10 @@
 # =============================================================================
 
 import uuid
-from datetime import time
 
 import pytest
-
 from app.models.doctor import Doctor
-from app.models.enums import DayOfWeekEnum, DoctorRoleEnum, GenderEnum
+from app.models.enums import DoctorRoleEnum, GenderEnum
 
 
 async def _create_doctor_in_db(db_session) -> str:
@@ -112,9 +110,7 @@ class TestScheduleListing:
         assert response.json() == []
 
     @pytest.mark.asyncio
-    async def test_get_by_doctor_id_returns_only_that_doctors_schedules(
-        self, client, db_session
-    ):
+    async def test_get_by_doctor_id_returns_only_that_doctors_schedules(self, client, db_session):
         """GET /schedules/doctor/{id} must only return schedules for that specific doctor."""
         doctor1_id = await _create_doctor_in_db(db_session)
         doctor2_id = await _create_doctor_in_db(db_session)

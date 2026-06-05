@@ -13,14 +13,12 @@ import logging
 from typing import List
 from uuid import UUID
 
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.models.doctor import Doctor
 from app.models.schedule import DoctorWeeklySchedule
 from app.repositories.base import BaseRepository
-from app.schemas.schedule import (DoctorWeeklyScheduleCreate,
-                                  DoctorWeeklyScheduleUpdate)
+from app.schemas.schedule import DoctorWeeklyScheduleCreate, DoctorWeeklyScheduleUpdate
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
 
@@ -42,9 +40,7 @@ class ScheduleRepository(BaseRepository[DoctorWeeklySchedule]):
     async def get_by_doctor_id(self, doctor_id: UUID) -> List[DoctorWeeklySchedule]:
         """Fetch all schedule templates for a specific doctor."""
         result = await self.db.execute(
-            select(DoctorWeeklySchedule).where(
-                DoctorWeeklySchedule.doctor_id == doctor_id
-            )
+            select(DoctorWeeklySchedule).where(DoctorWeeklySchedule.doctor_id == doctor_id)
         )
         return list(result.scalars().all())
 

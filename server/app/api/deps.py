@@ -22,13 +22,12 @@
 
 from typing import Annotated
 
+from app.core.database import get_db  # async get_db from new core module
+from app.core.security import decode_access_token
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError
 from sqlalchemy.ext.asyncio import AsyncSession
-
-from app.core.database import get_db  # async get_db from new core module
-from app.core.security import decode_access_token
 
 # HTTPBearer reads the "Authorization: Bearer <token>" header automatically.
 # If the header is missing or malformed, FastAPI returns 403 before our code runs.

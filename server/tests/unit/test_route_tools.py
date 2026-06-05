@@ -27,7 +27,6 @@
 # =============================================================================
 
 import pytest
-
 from app.tools.route_tools import calculate_shortest_route_tool, haversine_km
 
 
@@ -108,12 +107,8 @@ class TestCalculateShortestRoute:
         result = await calculate_shortest_route_tool(list(fake_coords.keys()))
 
         assert result[0] == "///start.point.here", "Start point should remain first"
-        assert (
-            result[1] == "///close.location.b"
-        ), "Closer location should be visited second"
-        assert (
-            result[2] == "///far.location.c"
-        ), "Farther location should be visited last"
+        assert result[1] == "///close.location.b", "Closer location should be visited second"
+        assert result[2] == "///far.location.c", "Farther location should be visited last"
 
     @pytest.mark.asyncio
     async def test_two_locations_always_returns_both(self, mocker):
@@ -126,9 +121,7 @@ class TestCalculateShortestRoute:
             }[addr],
         )
 
-        result = await calculate_shortest_route_tool(
-            ["///loc.a.here", "///loc.b.there"]
-        )
+        result = await calculate_shortest_route_tool(["///loc.a.here", "///loc.b.there"])
         assert len(result) == 2
         assert "///loc.a.here" in result
         assert "///loc.b.there" in result
@@ -142,6 +135,4 @@ class TestCalculateShortestRoute:
         )
 
         with pytest.raises(Exception, match="W3W API unavailable"):
-            await calculate_shortest_route_tool(
-                ["///some.w3w.address", "///another.w3w.address"]
-            )
+            await calculate_shortest_route_tool(["///some.w3w.address", "///another.w3w.address"])

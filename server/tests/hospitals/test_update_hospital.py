@@ -1,9 +1,7 @@
 from uuid import uuid4
 
-import pytest
-from httpx import AsyncClient
-
 from app.common_types.enums import HealthcareLevelEnum
+from httpx import AsyncClient
 
 
 def _hospital_payload(faker) -> dict:

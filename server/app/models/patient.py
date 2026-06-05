@@ -15,10 +15,9 @@
 from datetime import datetime
 from uuid import uuid4
 
+from app.models.base import Base
 from sqlalchemy import Column, DateTime, Float, String, Text
 from sqlalchemy.dialects.postgresql import UUID
-
-from app.models.base import Base
 
 
 class Patient(Base):

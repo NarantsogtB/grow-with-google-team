@@ -28,23 +28,20 @@
 # runs unchanged — it doesn't know it's talking to SQLite instead of Postgres.
 # =============================================================================
 
-import pytest
-import pytest_asyncio
-from httpx import ASGITransport, AsyncClient
-from sqlalchemy import StaticPool, create_engine
-from sqlalchemy.ext.asyncio import (AsyncSession, async_sessionmaker,
-                                    create_async_engine)
-from sqlalchemy.orm import sessionmaker
-
 # Import all model classes to register them in Base.metadata before create_all
 import app.models.doctor  # noqa: F401
 import app.models.hospital  # noqa: F401
 import app.models.patient  # noqa: F401
 import app.models.schedule  # noqa: F401
+import pytest_asyncio
 from app.core.database import get_db
 from app.database import get_db as legacy_get_db
 from app.main import app
 from app.models.base import Base
+from httpx import ASGITransport, AsyncClient
+from sqlalchemy import StaticPool, create_engine
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.orm import sessionmaker
 
 # SQLite in-memory database:
 # ":memory:" means the DB lives in RAM — created on first use, gone after tests.

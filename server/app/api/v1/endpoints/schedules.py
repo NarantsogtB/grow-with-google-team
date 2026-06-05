@@ -7,14 +7,14 @@
 from typing import List
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, status
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.api.deps import Database
-from app.schemas.schedule import (DoctorWeeklyScheduleCreate,
-                                  DoctorWeeklyScheduleResponse,
-                                  DoctorWeeklyScheduleUpdate)
+from app.schemas.schedule import (
+    DoctorWeeklyScheduleCreate,
+    DoctorWeeklyScheduleResponse,
+    DoctorWeeklyScheduleUpdate,
+)
 from app.services.schedule_service import ScheduleService
+from fastapi import APIRouter, status
 
 router = APIRouter(prefix="/schedules", tags=["Doctor Weekly Schedules"])
 

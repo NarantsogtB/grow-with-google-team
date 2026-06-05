@@ -7,11 +7,10 @@
 
 from typing import List, Optional, Tuple
 
-from sqlalchemy import func, or_, select
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.models.patient import Patient
 from app.repositories.base import BaseRepository
+from sqlalchemy import func, or_, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class PatientRepository(BaseRepository[Patient]):
@@ -46,9 +45,7 @@ class PatientRepository(BaseRepository[Patient]):
         1. Duplicate check during registration
         2. Credential lookup during login
         """
-        result = await self.db.execute(
-            select(Patient).where(Patient.phone_number == phone_number)
-        )
+        result = await self.db.execute(select(Patient).where(Patient.phone_number == phone_number))
         return result.scalar_one_or_none()
 
     async def search(self, q: str, page: int, size: int) -> Tuple[List[Patient], int]:
@@ -60,59 +57,40 @@ class PatientRepository(BaseRepository[Patient]):
             Patient.phone_number.ilike(pattern),
         )
         total = (
-            await self.db.execute(
-                select(func.count()).select_from(Patient).where(where)
-            )
+            await self.db.execute(select(func.count()).select_from(Patient).where(where))
         ).scalar()
         rows = (
-            (
-                await self.db.execute(
-                    select(Patient).where(where).offset(offset).limit(size)
-                )
-            )
+            (await self.db.execute(select(Patient).where(where).offset(offset).limit(size)))
             .scalars()
             .all()
         )
         return list(rows), total
 
     async def get_by_telegram_chat_id(self, chat_id: str) -> Optional[Patient]:
-        result = await self.db.execute(
-            select(Patient).where(Patient.telegram_chat_id == chat_id)
-        )
+        result = await self.db.execute(select(Patient).where(Patient.telegram_chat_id == chat_id))
         return result.scalar_one_or_none()
 
     async def get_with_telegram(self) -> List[Patient]:
         """Return all patients that have a Telegram chat ID set."""
         rows = (
-            (
-                await self.db.execute(
-                    select(Patient).where(Patient.telegram_chat_id.isnot(None))
-                )
-            )
+            (await self.db.execute(select(Patient).where(Patient.telegram_chat_id.isnot(None))))
             .scalars()
             .all()
         )
         return list(rows)
 
-    async def get_by_sector(
-        self, sector: str, page: int, size: int
-    ) -> Tuple[List[Patient], int]:
+    async def get_by_sector(self, sector: str, page: int, size: int) -> Tuple[List[Patient], int]:
         """Filter patients by geographic sector (matches doctor.assigned_sector)."""
         offset = (page - 1) * size
         total = (
             await self.db.execute(
-                select(func.count())
-                .select_from(Patient)
-                .where(Patient.sector == sector)
+                select(func.count()).select_from(Patient).where(Patient.sector == sector)
             )
         ).scalar()
         rows = (
             (
                 await self.db.execute(
-                    select(Patient)
-                    .where(Patient.sector == sector)
-                    .offset(offset)
-                    .limit(size)
+                    select(Patient).where(Patient.sector == sector).offset(offset).limit(size)
                 )
             )
             .scalars()

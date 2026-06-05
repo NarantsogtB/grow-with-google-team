@@ -9,13 +9,14 @@ import logging
 from typing import List
 from uuid import UUID
 
+from app.repositories.schedule_repo import ScheduleRepository
+from app.schemas.schedule import (
+    DoctorWeeklyScheduleCreate,
+    DoctorWeeklyScheduleResponse,
+    DoctorWeeklyScheduleUpdate,
+)
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-
-from app.repositories.schedule_repo import ScheduleRepository
-from app.schemas.schedule import (DoctorWeeklyScheduleCreate,
-                                  DoctorWeeklyScheduleResponse,
-                                  DoctorWeeklyScheduleUpdate)
 
 logger = logging.getLogger(__name__)
 
@@ -35,9 +36,7 @@ class ScheduleService:
     def __init__(self, db: AsyncSession) -> None:
         self.repo = ScheduleRepository(db)
 
-    async def create(
-        self, data: DoctorWeeklyScheduleCreate
-    ) -> DoctorWeeklyScheduleResponse:
+    async def create(self, data: DoctorWeeklyScheduleCreate) -> DoctorWeeklyScheduleResponse:
         """Create a new schedule template, validating the doctor exists first."""
         try:
             schedule = await self.repo.create_with_doctor_validation(data)
@@ -58,9 +57,7 @@ class ScheduleService:
         except ValueError as e:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
-    async def get_by_doctor(
-        self, doctor_id: UUID
-    ) -> List[DoctorWeeklyScheduleResponse]:
+    async def get_by_doctor(self, doctor_id: UUID) -> List[DoctorWeeklyScheduleResponse]:
         """Fetch all schedule templates for a specific doctor."""
         schedules = await self.repo.get_by_doctor_id(doctor_id)
         return [DoctorWeeklyScheduleResponse.model_validate(s) for s in schedules]

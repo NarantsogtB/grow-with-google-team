@@ -18,14 +18,12 @@
 
 import logging
 
-from fastapi import HTTPException, status
-from sqlalchemy.ext.asyncio import AsyncSession
-
-from app.core.security import (create_access_token, hash_password,
-                               verify_password)
+from app.core.security import create_access_token, hash_password, verify_password
 from app.models.patient import Patient
 from app.repositories.patient_repo import PatientRepository
-from app.schemas.patient import LoginResponse, PatientCreate, PatientResponse
+from app.schemas.patient import LoginResponse, PatientCreate
+from fastapi import HTTPException, status
+from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
 
@@ -55,9 +53,7 @@ class PatientService:
         # Rule 1: phone uniqueness
         existing = await self.repo.get_by_phone(data.phone_number)
         if existing:
-            logger.warning(
-                "Registration attempt with duplicate phone: %s", data.phone_number
-            )
+            logger.warning("Registration attempt with duplicate phone: %s", data.phone_number)
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Энэ утасны дугаар бүртгэлтэй байна. Нэвтрэнэ үү.",

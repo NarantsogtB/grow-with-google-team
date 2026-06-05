@@ -2,12 +2,11 @@ import logging
 from datetime import date as DateType
 from datetime import datetime, time, timedelta, timezone
 
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.repositories.daily_visit_plan_repo import DailyVisitPlanRepository
 from app.repositories.patient_repo import PatientRepository
 from app.tools.route_tools import haversine_km
 from app.utils.telegram import send_telegram_message
+from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
 _UB = timezone(timedelta(hours=8))
@@ -72,17 +71,11 @@ def _parse_intent(text: str) -> str:
     return "unknown"
 
 
-async def _recalculate_route(
-    db: AsyncSession, visit_date: DateType, doctor_id: str
-) -> None:
+async def _recalculate_route(db: AsyncSession, visit_date: DateType, doctor_id: str) -> None:
     repo = DailyVisitPlanRepository(db)
     plans = await repo.get_active_by_date_doctor(visit_date, doctor_id)
     patients = [await PatientRepository(db).get_by_id(str(p.patient_id)) for p in plans]
-    pairs = [
-        (pl, pt)
-        for pl, pt in zip(plans, patients)
-        if pt and pt.latitude and pt.longitude
-    ]
+    pairs = [(pl, pt) for pl, pt in zip(plans, patients) if pt and pt.latitude and pt.longitude]
     if len(pairs) <= 1:
         return
 
@@ -90,9 +83,7 @@ async def _recalculate_route(
     first_plan = ordered[0][0]
     base_time = first_plan.estimated_time or time(9, 0)
     for i, (pl, _) in enumerate(ordered):
-        new_time = (
-            datetime.combine(visit_date, base_time) + timedelta(minutes=30 * i)
-        ).time()
+        new_time = (datetime.combine(visit_date, base_time) + timedelta(minutes=30 * i)).time()
         await repo.update_order_and_time(pl.id, i + 1, new_time)
     logger.info(
         "Route recalculated for doctor %s on %s: %d stops",

@@ -1,11 +1,10 @@
 from datetime import date as DateType
 from typing import List, Optional
 
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.models.daily_visit_plan import DailyVisitPlan
 from app.repositories.base import BaseRepository
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class DailyVisitPlanRepository(BaseRepository[DailyVisitPlan]):

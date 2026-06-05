@@ -9,9 +9,8 @@ from datetime import time
 from typing import Optional
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
-
 from app.models.enums import DayOfWeekEnum
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class DoctorWeeklyScheduleBase(BaseModel):

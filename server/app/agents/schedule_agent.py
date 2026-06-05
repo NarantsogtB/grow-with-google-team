@@ -19,9 +19,8 @@ import logging
 from typing import Any, Dict
 from uuid import UUID
 
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.tools.schedule_tools import reorder_schedule_tool
+from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
 
@@ -74,9 +73,7 @@ async def handle_schedule_update(
             f"Үлдсэн зай: {result.get('remaining_capacity', 'тодорхойгүй')}"
         )
     else:
-        response = (
-            f"Хуваарь шинэчлэхэд алдаа гарлаа: {result.get('error', 'Unknown error')}"
-        )
+        response = f"Хуваарь шинэчлэхэд алдаа гарлаа: {result.get('error', 'Unknown error')}"
 
     return {
         **state,

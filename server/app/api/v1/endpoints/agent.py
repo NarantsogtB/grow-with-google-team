@@ -23,13 +23,11 @@
 #   setSoapData(data.tool_result);      // Structured S/O/A/P if soap_note intent
 # =============================================================================
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
-from pydantic import BaseModel
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.agents.orchestrator import orchestrator_app
 from app.agents.soap_agent import structure_soap_note, transcribe_audio
 from app.api.deps import CurrentPatient, Database
+from fastapi import APIRouter, File, HTTPException, UploadFile, status
+from pydantic import BaseModel
 
 router = APIRouter(prefix="/agent", tags=["AI Agent"])
 

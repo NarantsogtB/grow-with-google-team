@@ -7,13 +7,12 @@
 
 import uuid
 
+from app.models.base import Base
+from app.models.enums import DoctorRoleEnum, GenderEnum
 from sqlalchemy import Boolean, Column, DateTime, Enum, ForeignKey, String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
-
-from app.models.base import Base
-from app.models.enums import DoctorRoleEnum, GenderEnum
 
 
 class Doctor(Base):

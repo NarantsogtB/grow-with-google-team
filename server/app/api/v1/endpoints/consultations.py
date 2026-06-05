@@ -1,13 +1,12 @@
 from datetime import datetime
-from typing import List, Optional
+from typing import Optional
 from uuid import UUID
-
-from fastapi import APIRouter, Query
-from pydantic import BaseModel, ConfigDict
 
 from app.api.deps import Database
 from app.models.consultation import Consultation
 from app.repositories.consultation_repo import ConsultationRepository
+from fastapi import APIRouter, Query
+from pydantic import BaseModel, ConfigDict
 
 router = APIRouter(prefix="/consultations", tags=["Consultations"])
 

@@ -1,2 +1,6 @@
-from app.schemas.patient import (LoginRequest, LoginResponse,  # noqa: F401
-                                 PatientCreate, PatientResponse)
+from app.schemas.patient import (  # noqa: F401
+    LoginRequest,
+    LoginResponse,
+    PatientCreate,
+    PatientResponse,
+)

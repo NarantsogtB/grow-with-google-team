@@ -1,9 +1,7 @@
-import pytest
+from app.common_types.enums import HealthcareLevelEnum
 from httpx import AsyncClient
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
-
-from app.common_types.enums import HealthcareLevelEnum
 
 
 def _hospital_payload(faker) -> dict:
@@ -56,9 +54,7 @@ async def test_register_hospital_duplicate_phone(client: AsyncClient, faker):
     )
 
 
-async def test_register_hospital_rollback_on_exception(
-    client: AsyncClient, faker, monkeypatch
-):
+async def test_register_hospital_rollback_on_exception(client: AsyncClient, faker, monkeypatch):
     """It should throw exception error when database connection failed"""
     rollback_called = False
 

@@ -1,17 +1,14 @@
 from uuid import UUID
 
-from sqlalchemy import update
-
 from app.database import Database
 from app.exceptions import HospitalNotFoundError, HospitalUpdateEmptyError
 from app.models import Hospital
 from app.models.hospitals import HospitalUpdate
 from app.utils.logger import logger
+from sqlalchemy import update
 
 
-def update_hospital(
-    db: Database, hospital_id: UUID, hospital_data: HospitalUpdate
-) -> Hospital:
+def update_hospital(db: Database, hospital_id: UUID, hospital_data: HospitalUpdate) -> Hospital:
     """Modify hospital info"""
     logger.info(f"{hospital_id} - тай эмнэлэгийн мэдээллийг шинэчлэх хүсэлт ирлээ")
     update_dict = hospital_data.model_dump(exclude_unset=True)
@@ -23,10 +20,7 @@ def update_hospital(
         raise HospitalUpdateEmptyError()
 
     stmt = (
-        update(Hospital)
-        .where(Hospital.id == hospital_id)
-        .values(**update_dict)
-        .returning(Hospital)
+        update(Hospital).where(Hospital.id == hospital_id).values(**update_dict).returning(Hospital)
     )
 
     result = db.execute(stmt)

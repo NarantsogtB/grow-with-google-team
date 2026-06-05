@@ -2,13 +2,12 @@ from datetime import date, time
 from typing import List, Optional
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel, ConfigDict
-
 from app.api.deps import Database
 from app.models.daily_visit_plan import DailyVisitPlan
 from app.repositories.daily_visit_plan_repo import DailyVisitPlanRepository
 from app.repositories.patient_repo import PatientRepository
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel, ConfigDict
 
 router = APIRouter(prefix="/visit-plans", tags=["Visit Plans"])
 

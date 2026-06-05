@@ -29,14 +29,12 @@
 # =============================================================================
 
 import logging
-import uuid
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 from uuid import UUID
 
+from app.models.schedule import DoctorWeeklySchedule
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-
-from app.models.schedule import DoctorWeeklySchedule
 
 logger = logging.getLogger(__name__)
 

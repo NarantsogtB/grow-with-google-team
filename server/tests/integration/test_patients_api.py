@@ -83,9 +83,7 @@ class TestPatientRegistration:
         """
         phone = "99112233"
         await client.post("/api/v1/patients/", json=make_patient_payload(phone=phone))
-        response = await client.post(
-            "/api/v1/patients/", json=make_patient_payload(phone=phone)
-        )
+        response = await client.post("/api/v1/patients/", json=make_patient_payload(phone=phone))
 
         assert response.status_code == 400
         detail = response.json()["detail"]
@@ -97,9 +95,7 @@ class TestPatientRegistration:
         Sending incomplete data should return 422 Unprocessable Entity.
         422 means Pydantic validation rejected the input.
         """
-        response = await client.post(
-            "/api/v1/patients/", json={"full_name": "Only Name"}
-        )
+        response = await client.post("/api/v1/patients/", json={"full_name": "Only Name"})
         assert response.status_code == 422
 
 
@@ -154,9 +150,7 @@ class TestPatientLogin:
 
         # Verify it's a real JWT structure
         parts = token.split(".")
-        assert (
-            len(parts) == 3
-        ), f"Expected JWT with 3 dot-separated parts, got: '{token[:50]}...'"
+        assert len(parts) == 3, f"Expected JWT with 3 dot-separated parts, got: '{token[:50]}...'"
 
         # Verify the old mock pattern is gone
         assert not token.startswith(

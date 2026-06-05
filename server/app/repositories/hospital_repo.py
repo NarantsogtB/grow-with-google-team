@@ -8,15 +8,17 @@ import logging
 from typing import Optional
 from uuid import UUID
 
-from sqlalchemy import delete as sql_delete
-from sqlalchemy import select, update
-from sqlalchemy.ext.asyncio import AsyncSession
-
-from app.exceptions import (HospitalAlreadyExistError, HospitalNotFoundError,
-                            HospitalUpdateEmptyError)
+from app.exceptions import (
+    HospitalAlreadyExistError,
+    HospitalNotFoundError,
+    HospitalUpdateEmptyError,
+)
 from app.models.hospital import Hospital
 from app.repositories.base import BaseRepository
 from app.schemas.hospital import HospitalUpdate
+from sqlalchemy import delete as sql_delete
+from sqlalchemy import select, update
+from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
 
@@ -52,9 +54,7 @@ class HospitalRepository(BaseRepository[Hospital]):
         new_hospital = Hospital(**hospital_data.model_dump())
         return await self.create(new_hospital)
 
-    async def update(
-        self, hospital_id: UUID, hospital_data: HospitalUpdate
-    ) -> Hospital:
+    async def update(self, hospital_id: UUID, hospital_data: HospitalUpdate) -> Hospital:
         """Update hospital fields using UPDATE ... RETURNING."""
         update_dict = hospital_data.model_dump(exclude_unset=True)
 
@@ -80,9 +80,7 @@ class HospitalRepository(BaseRepository[Hospital]):
 
     async def delete(self, hospital_id: UUID) -> None:
         """Permanently remove a hospital from the database."""
-        result = await self.db.execute(
-            sql_delete(Hospital).where(Hospital.id == hospital_id)
-        )
+        result = await self.db.execute(sql_delete(Hospital).where(Hospital.id == hospital_id))
         if result.rowcount == 0:
             raise HospitalNotFoundError(hospital_id)
         await self.db.flush()

@@ -8,14 +8,17 @@
 from typing import Optional
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.api.deps import CurrentPatient, Database
 from app.schemas.common import PaginatedResponse
-from app.schemas.patient import (LoginRequest, LoginResponse, PatientCreate,
-                                 PatientResponse, PatientUpdate)
+from app.schemas.patient import (
+    LoginRequest,
+    LoginResponse,
+    PatientCreate,
+    PatientResponse,
+    PatientUpdate,
+)
 from app.services.patient_service import PatientService
+from fastapi import APIRouter, HTTPException, Query, status
 
 router = APIRouter(prefix="/patients", tags=["Patients & Auth"])
 
@@ -53,9 +56,7 @@ async def get_my_profile(current_patient: CurrentPatient):
 
 
 @router.put("/me", response_model=PatientResponse)
-async def update_my_profile(
-    data: PatientUpdate, db: Database, current_patient: CurrentPatient
-):
+async def update_my_profile(data: PatientUpdate, db: Database, current_patient: CurrentPatient):
     """Partially update the authenticated patient's own profile."""
     from app.repositories.patient_repo import PatientRepository
 
@@ -67,15 +68,11 @@ async def update_my_profile(
 async def list_patients(
     db: Database,
     page: int = Query(default=1, ge=1, description="Хуудасны дугаар"),
-    size: int = Query(
-        default=10, ge=1, le=100, description="Нэг хуудсанд харуулах тоо"
-    ),
+    size: int = Query(default=10, ge=1, le=100, description="Нэг хуудсанд харуулах тоо"),
     sector: Optional[str] = Query(
         default=None, description="Filter by sector (matches doctor.assigned_sector)"
     ),
-    q: Optional[str] = Query(
-        default=None, description="Нэр эсвэл утасны дугаараар хайх"
-    ),
+    q: Optional[str] = Query(default=None, description="Нэр эсвэл утасны дугаараар хайх"),
 ):
     from app.repositories.patient_repo import PatientRepository
 

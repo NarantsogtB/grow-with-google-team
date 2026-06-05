@@ -1,16 +1,22 @@
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, Query, status
-
-from app.controllers.doctors import (create_new_doctor, get_doctor_by_id,
-                                     get_doctors, update_doctor)
+from app.controllers.doctors import create_new_doctor, get_doctor_by_id, get_doctors, update_doctor
 from app.database import Database
-from app.exceptions import (DoctorAlreadyExistsError, DoctorNotActiveError,
-                            DoctorNotFoundError, DoctorUpdateEmptyError,
-                            WebAppError)
-from app.models.doctors import (DoctorCreate, DoctorListResponse,
-                                DoctorResponse, DoctorUpdate,
-                                DoctorUpdateResponse)
+from app.exceptions import (
+    DoctorAlreadyExistsError,
+    DoctorNotActiveError,
+    DoctorNotFoundError,
+    DoctorUpdateEmptyError,
+    WebAppError,
+)
+from app.models.doctors import (
+    DoctorCreate,
+    DoctorListResponse,
+    DoctorResponse,
+    DoctorUpdate,
+    DoctorUpdateResponse,
+)
+from fastapi import APIRouter, HTTPException, Query, status
 
 router = APIRouter(prefix="/doctors", tags=["Doctors"])
 
@@ -62,14 +68,10 @@ def read_doctor_by_id(db: Database, doctor_id: UUID) -> DoctorResponse:
 
 
 @router.put("/{doctor_id}", status_code=status.HTTP_200_OK)
-def modify_doctor(
-    db: Database, doctor_id: UUID, doctor_data: DoctorUpdate
-) -> DoctorUpdateResponse:
+def modify_doctor(db: Database, doctor_id: UUID, doctor_data: DoctorUpdate) -> DoctorUpdateResponse:
     try:
         updated_doctor = update_doctor(db, doctor_id, doctor_data)
-        return DoctorUpdateResponse(
-            message="Мэдээлэл амжилттай шинэчлэлээ", data=updated_doctor
-        )
+        return DoctorUpdateResponse(message="Мэдээлэл амжилттай шинэчлэлээ", data=updated_doctor)
     except DoctorNotFoundError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     except DoctorUpdateEmptyError as e:

@@ -1,16 +1,21 @@
 from uuid import UUID
 
+from app.controllers.doctor_weekly_schedules import (
+    create_doctor_weekly_schedule,
+    delete_doctor_weekly_schedule,
+    get_doctor_weekly_schedule_by_id,
+    get_doctor_weekly_schedules,
+    get_doctor_weekly_schedules_by_doctor_id,
+    update_doctor_weekly_schedule,
+)
+from app.database import get_db
+from app.models.doctor_weekly_schedules import (
+    DoctorWeeklyScheduleCreate,
+    DoctorWeeklyScheduleResponse,
+    DoctorWeeklyScheduleUpdate,
+)
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-
-from app.controllers.doctor_weekly_schedules import (
-    create_doctor_weekly_schedule, delete_doctor_weekly_schedule,
-    get_doctor_weekly_schedule_by_id, get_doctor_weekly_schedules,
-    get_doctor_weekly_schedules_by_doctor_id, update_doctor_weekly_schedule)
-from app.database import get_db
-from app.models.doctor_weekly_schedules import (DoctorWeeklyScheduleCreate,
-                                                DoctorWeeklyScheduleResponse,
-                                                DoctorWeeklyScheduleUpdate)
 
 router = APIRouter(
     prefix="/doctor-weekly-schedules",

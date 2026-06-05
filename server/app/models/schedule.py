@@ -12,12 +12,11 @@
 
 from uuid import uuid4
 
+from app.models.base import Base
+from app.models.enums import DayOfWeekEnum
 from sqlalchemy import Boolean, Column, Enum, ForeignKey, Integer, Time
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
-
-from app.models.base import Base
-from app.models.enums import DayOfWeekEnum
 
 
 class DoctorWeeklySchedule(Base):

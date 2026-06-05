@@ -15,14 +15,12 @@
 
 from typing import Annotated
 
+from app.config import settings
+from app.models.base import Base  # Single shared Base — replaces declarative_base() here
+from app.utils.logger import get_logger
 from fastapi import Depends
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
-
-from app.config import settings
-from app.models.base import \
-    Base  # Single shared Base — replaces declarative_base() here
-from app.utils.logger import get_logger
 
 logger = get_logger("database")
 

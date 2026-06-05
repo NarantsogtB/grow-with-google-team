@@ -1,9 +1,8 @@
 import logging
 
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.repositories.patient_repo import PatientRepository
 from app.utils.telegram import send_telegram_message
+from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +20,5 @@ async def bulk_send_reminders(db: AsyncSession, message: str | None = None) -> d
             sent += 1
         else:
             failed += 1
-    logger.info(
-        "Bulk reminders: sent=%d failed=%d total=%d", sent, failed, len(patients)
-    )
+    logger.info("Bulk reminders: sent=%d failed=%d total=%d", sent, failed, len(patients))
     return {"sent": sent, "failed": failed, "total": len(patients)}

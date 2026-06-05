@@ -17,8 +17,6 @@
 #   /api/v1/agent/chat  ← LangGraph orchestrator (AI endpoint)
 # =============================================================================
 
-from fastapi import APIRouter
-
 from app.api.v1.endpoints.agent import router as agent_router
 from app.api.v1.endpoints.consultations import router as consultations_router
 from app.api.v1.endpoints.doctors import router as doctors_router
@@ -28,6 +26,7 @@ from app.api.v1.endpoints.patients import router as patients_router
 from app.api.v1.endpoints.schedules import router as schedules_router
 from app.api.v1.endpoints.telegram_webhook import router as telegram_router
 from app.api.v1.endpoints.visit_plans import router as visit_plans_router
+from fastapi import APIRouter
 
 # The api_router is included in main.py with prefix="/api/v1"
 api_router = APIRouter()

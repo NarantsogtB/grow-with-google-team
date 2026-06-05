@@ -1,7 +1,5 @@
-import pytest
-from httpx import AsyncClient
-
 from app.common_types.enums import DoctorRoleEnum, GenderEnum
+from httpx import AsyncClient
 
 
 async def test_register_doctor_success(client: AsyncClient, faker):
@@ -9,9 +7,7 @@ async def test_register_doctor_success(client: AsyncClient, faker):
     mock_doctor_data = {
         "first_name": faker.first_name(),
         "last_name": faker.last_name(),
-        "gender": faker.random_element(
-            elements=(GenderEnum.MALE.value, GenderEnum.FEMALE.value)
-        ),
+        "gender": faker.random_element(elements=(GenderEnum.MALE.value, GenderEnum.FEMALE.value)),
         "phone": str(faker.random_int(min=50000000, max=99999999)),
         "email": faker.unique.email(),
         "role": faker.random_element(

@@ -7,16 +7,22 @@
 import logging
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.api.deps import Database
-from app.exceptions import (HospitalAlreadyExistError, HospitalNotFoundError,
-                            HospitalUpdateEmptyError, WebAppError)
+from app.exceptions import (
+    HospitalAlreadyExistError,
+    HospitalNotFoundError,
+    HospitalUpdateEmptyError,
+    WebAppError,
+)
 from app.repositories.hospital_repo import HospitalRepository
 from app.schemas.common import PaginatedResponse
-from app.schemas.hospital import (HospitalCreate, HospitalResponse,
-                                  HospitalUpdate, HospitalUpdateResponse)
+from app.schemas.hospital import (
+    HospitalCreate,
+    HospitalResponse,
+    HospitalUpdate,
+    HospitalUpdateResponse,
+)
+from fastapi import APIRouter, HTTPException, Query, status
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/hospitals", tags=["Hospitals"])
@@ -102,9 +108,7 @@ async def modify_hospital(
     try:
         repo = HospitalRepository(db)
         updated = await repo.update(hospital_id, hospital_data)
-        return HospitalUpdateResponse(
-            message="Мэдээлэл амжилттай шинэчлэлээ", data=updated
-        )
+        return HospitalUpdateResponse(message="Мэдээлэл амжилттай шинэчлэлээ", data=updated)
     except HospitalNotFoundError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     except HospitalUpdateEmptyError as e:

@@ -45,18 +45,17 @@
 #   - general: ~100-200 tokens (simple response)
 # =============================================================================
 
-import json
 import logging
 import operator
 from typing import Annotated, Any, Dict, Optional
+
+from app.core.config import settings
 
 # google-genai==1.75.0 (new SDK) — NOT `import google.generativeai as genai` (old SDK)
 from google import genai
 from google.genai import types
 from langgraph.graph import END, START, StateGraph
 from typing_extensions import TypedDict
-
-from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -113,9 +112,7 @@ async def classify_intent(state: AgentState) -> AgentState:
         response = await _client.aio.models.generate_content(
             model="gemini-2.5-flash",
             contents=content,
-            config=types.GenerateContentConfig(
-                system_instruction=INTENT_CLASSIFICATION_PROMPT
-            ),
+            config=types.GenerateContentConfig(system_instruction=INTENT_CLASSIFICATION_PROMPT),
         )
         intent = (response.text or "general").strip().lower()
 
@@ -160,7 +157,6 @@ async def schedule_node(state: AgentState) -> AgentState:
     Returns a confirmation message for the doctor.
     """
     # The schedule_agent module handles the full flow
-    from app.agents.schedule_agent import handle_schedule_update
 
     # NOTE: In production, the db session is passed via the FastAPI endpoint
     # that invokes this graph. For now, we return an instructional message.
@@ -182,7 +178,6 @@ async def route_node(state: AgentState) -> AgentState:
     Extracts W3W addresses from schedule and calls calculate_shortest_route_tool.
     Returns sorted route as a numbered list.
     """
-    from app.tools.route_tools import calculate_shortest_route_tool
 
     # In production, W3W addresses are fetched from today's patient schedule
     # For demonstration, we return an instructional message
@@ -248,9 +243,7 @@ async def general_node(state: AgentState) -> AgentState:
         response = await _client.aio.models.generate_content(
             model="gemini-2.5-flash",
             contents=content,
-            config=types.GenerateContentConfig(
-                system_instruction=GENERAL_SYSTEM_PROMPT
-            ),
+            config=types.GenerateContentConfig(system_instruction=GENERAL_SYSTEM_PROMPT),
         )
         return {**state, "final_response": response.text or ""}
     except Exception as e:

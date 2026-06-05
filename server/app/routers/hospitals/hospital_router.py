@@ -1,16 +1,26 @@
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, Query, status
-
-from app.controllers.hospital import (create_new_hospital, get_hospital_by_id,
-                                      get_hospitals, update_hospital)
+from app.controllers.hospital import (
+    create_new_hospital,
+    get_hospital_by_id,
+    get_hospitals,
+    update_hospital,
+)
 from app.database import Database
-from app.exceptions import (HospitalAlreadyExistError, HospitalNotFoundError,
-                            HospitalUpdateEmptyError, WebAppError)
-from app.models import Hospital
-from app.models.hospitals import (HospitalCreate, HospitalDeleteResponse,
-                                  HospitalListResponse, HospitalResponse,
-                                  HospitalUpdate, HospitalUpdateResponse)
+from app.exceptions import (
+    HospitalAlreadyExistError,
+    HospitalNotFoundError,
+    HospitalUpdateEmptyError,
+    WebAppError,
+)
+from app.models.hospitals import (
+    HospitalCreate,
+    HospitalListResponse,
+    HospitalResponse,
+    HospitalUpdate,
+    HospitalUpdateResponse,
+)
+from fastapi import APIRouter, HTTPException, Query, status
 
 router = APIRouter(prefix="/hospitals", tags=["Hospitals"])
 

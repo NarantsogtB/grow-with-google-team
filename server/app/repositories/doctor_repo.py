@@ -15,16 +15,19 @@ import logging
 from typing import Optional
 from uuid import UUID
 
+from app.exceptions import (
+    DoctorAlreadyExistsError,
+    DoctorNotActiveError,
+    DoctorNotFoundError,
+    DoctorUpdateEmptyError,
+)
+from app.models.doctor import Doctor
+from app.repositories.base import BaseRepository
+from app.schemas.doctor import DoctorUpdate
 from sqlalchemy import delete as sql_delete
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
-
-from app.exceptions import (DoctorAlreadyExistsError, DoctorNotActiveError,
-                            DoctorNotFoundError, DoctorUpdateEmptyError)
-from app.models.doctor import Doctor
-from app.repositories.base import BaseRepository
-from app.schemas.doctor import DoctorUpdate
 
 logger = logging.getLogger(__name__)
 
@@ -67,9 +70,7 @@ class DoctorRepository(BaseRepository[Doctor]):
         """
         result = await self.db.execute(
             select(Doctor)
-            .options(
-                joinedload(Doctor.hospital)
-            )  # prevents N+1 / async lazy-load error
+            .options(joinedload(Doctor.hospital))  # prevents N+1 / async lazy-load error
             .where(Doctor.id == doctor_id)
         )
         doctor = result.scalar_one_or_none()
@@ -117,12 +118,7 @@ class DoctorRepository(BaseRepository[Doctor]):
         if not update_dict:
             raise DoctorUpdateEmptyError()
 
-        stmt = (
-            update(Doctor)
-            .where(Doctor.id == doctor_id)
-            .values(**update_dict)
-            .returning(Doctor)
-        )
+        stmt = update(Doctor).where(Doctor.id == doctor_id).values(**update_dict).returning(Doctor)
 
         result = await self.db.execute(stmt)
         updated_doctor = result.scalar_one_or_none()

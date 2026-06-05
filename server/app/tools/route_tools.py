@@ -33,7 +33,6 @@ import math
 from typing import Dict, List, Tuple
 
 import httpx
-
 from app.core.config import settings
 
 

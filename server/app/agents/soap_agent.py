@@ -30,14 +30,13 @@
 
 import json
 import logging
-from typing import Optional
+
+from app.core.config import settings
 
 # google-genai==1.75.0 uses the new SDK: `from google import genai`
 # NOT `import google.generativeai as genai` (that was the old SDK, now deprecated)
 from google import genai
 from google.genai import types
-
-from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 

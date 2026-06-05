@@ -2,15 +2,14 @@ import logging
 from datetime import datetime, timedelta, timezone
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
-from jose import jwt
-from passlib.context import CryptContext
-from sqlalchemy.orm import Session
-
 from app.config import settings
 from app.database import get_db
 from app.models.patients.patient_models import Patient
 from app.schemas import LoginRequest, PatientCreate, PatientResponse
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from jose import jwt
+from passlib.context import CryptContext
+from sqlalchemy.orm import Session
 
 # Suppress verbose bcrypt deprecation warnings from passlib
 logging.getLogger("passlib").setLevel(logging.ERROR)
@@ -76,9 +75,7 @@ def create_patient(patient: PatientCreate, db: Session = Depends(get_db)):
         db.refresh(new_patient)
     except Exception as e:
         db.rollback()
-        logging.getLogger(__name__).exception(
-            "Database error during patient creation: %s", e
-        )
+        logging.getLogger(__name__).exception("Database error during patient creation: %s", e)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Өгөгдлийн санд алдаа гарлаа. Дахин оролдоно уу.",
@@ -91,9 +88,7 @@ def create_patient(patient: PatientCreate, db: Session = Depends(get_db)):
 @router.post("/login")
 def login_patient(payload: LoginRequest, db: Session = Depends(get_db)):
     # Fetch patient by phone number
-    patient = (
-        db.query(Patient).filter(Patient.phone_number == payload.phone_number).first()
-    )
+    patient = db.query(Patient).filter(Patient.phone_number == payload.phone_number).first()
 
     # Verify both existence and password in one check to prevent
     # user enumeration attacks (attacker can't tell if phone doesn't exist vs wrong password)
@@ -123,9 +118,7 @@ def get_patients(
     # page=1 means "first page", size=10 means "10 records per page".
     # ge=1 and le=100 are validation constraints (min 1, max 100).
     page: int = Query(default=1, ge=1, description="Хуудасны дугаар"),
-    size: int = Query(
-        default=10, ge=1, le=100, description="Нэг хуудсанд харуулах тоо"
-    ),
+    size: int = Query(default=10, ge=1, le=100, description="Нэг хуудсанд харуулах тоо"),
     db: Session = Depends(get_db),
 ):
     offset = (page - 1) * size  # e.g. page=2, size=10 → skip first 10 rows

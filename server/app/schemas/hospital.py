@@ -8,9 +8,8 @@ from datetime import datetime
 from typing import Optional
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field
-
 from app.models.enums import HealthcareLevelEnum
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class HospitalBase(BaseModel):

@@ -6,13 +6,12 @@
 
 import uuid
 
+from app.models.base import Base
+from app.models.enums import HealthcareLevelEnum
 from sqlalchemy import Boolean, Column, DateTime, Enum, String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
-
-from app.models.base import Base
-from app.models.enums import HealthcareLevelEnum
 
 
 class Hospital(Base):
@@ -34,9 +33,7 @@ class Hospital(Base):
     )
 
     # One hospital → many doctors
-    doctors = relationship(
-        "Doctor", back_populates="hospital", cascade="all, delete-orphan"
-    )
+    doctors = relationship("Doctor", back_populates="hospital", cascade="all, delete-orphan")
 
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, onupdate=func.now())

@@ -1,12 +1,13 @@
 from uuid import UUID
 
+from app.models.doctor_weekly_schedules import (
+    DoctorWeeklySchedule,
+    DoctorWeeklyScheduleCreate,
+    DoctorWeeklyScheduleUpdate,
+)
+from app.models.doctors.doctor_models import Doctor
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
-
-from app.models.doctor_weekly_schedules import (DoctorWeeklySchedule,
-                                                DoctorWeeklyScheduleCreate,
-                                                DoctorWeeklyScheduleUpdate)
-from app.models.doctors.doctor_models import Doctor
 
 
 def get_doctor_weekly_schedules(db: Session):
@@ -25,11 +26,7 @@ def get_doctor_weekly_schedule_by_id(
     ID-аар нэг weekly schedule хайж авна.
     """
 
-    schedule = (
-        db.query(DoctorWeeklySchedule)
-        .filter(DoctorWeeklySchedule.id == schedule_id)
-        .first()
-    )
+    schedule = db.query(DoctorWeeklySchedule).filter(DoctorWeeklySchedule.id == schedule_id).first()
 
     if not schedule:
         raise HTTPException(
@@ -48,11 +45,7 @@ def get_doctor_weekly_schedules_by_doctor_id(
     Тухайн эмчид хамаарах weekly schedule-үүдийг авна.
     """
 
-    return (
-        db.query(DoctorWeeklySchedule)
-        .filter(DoctorWeeklySchedule.doctor_id == doctor_id)
-        .all()
-    )
+    return db.query(DoctorWeeklySchedule).filter(DoctorWeeklySchedule.doctor_id == doctor_id).all()
 
 
 def update_doctor_weekly_schedule(
