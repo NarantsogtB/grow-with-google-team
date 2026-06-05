@@ -1,4 +1,5 @@
 from app.api.deps import Database
+from app.repositories.patient_repo import PatientRepository
 from app.services.visit_service import handle_patient_reply
 from app.utils.telegram import send_telegram_message
 from fastapi import APIRouter, Request
@@ -11,9 +12,33 @@ async def telegram_webhook(request: Request, db: Database):
     body = await request.json()
     message = body.get("message", {})
     chat_id = str(message.get("chat", {}).get("id", ""))
-    text = message.get("text", "")
+    text = (message.get("text", "") or "").strip()
     if not chat_id or not text:
         return {"ok": True}
+
+    if text.startswith("/start"):
+        await send_telegram_message(
+            chat_id,
+            "Сайн байна уу! 👋\nТelegram холбохын тулд дараах командыг явуулна уу:\n\n/link <утасны дугаар>\n\nЖишээ: /link 99112233",
+        )
+        return {"ok": True}
+
+    if text.startswith("/link "):
+        phone = text.split(" ", 1)[1].strip()
+        patient = await PatientRepository(db).get_by_phone(phone)
+        if not patient:
+            await send_telegram_message(
+                chat_id,
+                "❌ Тус утасны дугаартай өвчтөн олдсонгүй. Дугаараа шалгаад дахин оролдоно уу.",
+            )
+            return {"ok": True}
+        await PatientRepository(db).update(patient, {"telegram_chat_id": chat_id})
+        await send_telegram_message(
+            chat_id,
+            f"✅ {patient.full_name}, Telegram амжилттай холбогдлоо!\nЦаашид эмчийн айлчлалын өмнө энэ хаяг руу мэдэгдэл ирнэ.",
+        )
+        return {"ok": True}
+
     reply = await handle_patient_reply(db, chat_id, text)
     await send_telegram_message(chat_id, reply)
     return {"ok": True}
