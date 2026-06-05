@@ -30,6 +30,7 @@ const EMPTY_FORM: DoctorCreate = {
   email: "",
   role: "GENERAL",
   assigned_sector: "",
+  password: "",
   telegram_id: null,
   hospital_id: null,
 };
@@ -81,6 +82,7 @@ export default function DoctorsPage() {
       email: d.email,
       role: d.role,
       assigned_sector: d.assigned_sector,
+      password: "",
       telegram_id: d.telegram_id,
       hospital_id: d.hospital_id,
     });
@@ -418,6 +420,23 @@ export default function DoctorsPage() {
                   />
                 </div>
               </div>
+
+              {!editing && (
+                <div>
+                  <label className="block text-[12px] font-medium text-slate-700 mb-1.5">
+                    Нууц үг *
+                  </label>
+                  <input
+                    required
+                    type="password"
+                    minLength={8}
+                    value={form.password}
+                    onChange={(e) => field("password", e.target.value)}
+                    placeholder="Хамгийн багадаа 8 тэмдэгт"
+                    className={inputClass}
+                  />
+                </div>
+              )}
 
               <div>
                 <label className="block text-[12px] font-medium text-slate-700 mb-1.5">

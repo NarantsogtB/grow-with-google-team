@@ -46,6 +46,7 @@ export interface DoctorCreate {
   email: string;
   role: DoctorRoleEnum;
   assigned_sector: string;
+  password: string;
   telegram_id?: string | null;
   hospital_id?: string | null;
 }
