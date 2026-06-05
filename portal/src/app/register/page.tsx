@@ -75,7 +75,6 @@ export default function RegisterPage() {
         phone_number: values.phone_number,
         password: values.password,
         address_text: values.address_text,
-        telegram_chat_id: values.telegram_chat_id || undefined,
         sector,
       });
 
@@ -224,18 +223,14 @@ export default function RegisterPage() {
               )}
             </div>
 
-            {/* Telegram (optional) */}
-            <div>
-              <label className="block text-[13px] font-medium text-slate-700 mb-1.5">
-                Telegram хэрэглэгч нэр{" "}
-                <span className="text-slate-400 font-normal">(заавал биш)</span>
-              </label>
-              <input
-                type="text"
-                placeholder="@username"
-                {...register("telegram_chat_id")}
-                className={inputClass}
-              />
+            {/* Telegram (optional — bot-link flow) */}
+            <div className="rounded-lg bg-blue-50 border border-blue-100 p-3 text-[12px] text-blue-700 space-y-1">
+              <p className="font-medium">Telegram мэдэгдэл идэвхжүүлэх (заавал биш)</p>
+              <p>Бүртгэлийн дараа манай bot-д утасны дугаараа явуулна уу:</p>
+              <code className="block bg-white rounded px-2 py-1 text-blue-800 font-mono">
+                /link &lt;утасны дугаар&gt;
+              </code>
+              <p className="text-blue-500">Жишээ: /link 99112233</p>
             </div>
 
             {/* Password */}
