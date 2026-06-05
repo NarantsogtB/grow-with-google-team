@@ -1,49 +1,40 @@
-from fastapi.testclient import TestClient
-from app.main import app
+import pytest
+from httpx import AsyncClient
 
-client =TestClient(app)
 
-def test_get_hospitals_empty(db_session):
-    """It should return empty list when db in no hospital"""
-    
-    response = client.get("/hospitals/")
-    response_data = response.json()
+async def test_get_hospitals_empty(client: AsyncClient):
+    """It should return empty list when db has no hospitals"""
+    response = await client.get("/hospitals/")
     assert response.status_code == 200
-    assert response_data["items"] == []
-    
-def test_get_hospitals_success(db_session, faker):
+    assert response.json()["items"] == []
+
+
+async def test_get_hospitals_success(client: AsyncClient, faker):
     """It should return hospitals list from db"""
-    
-    mock_hospital_data_1 = {
+    hospital_1 = {
         "hospital_name": f"{faker.company()} Hospital",
         "hospital_phone": str(faker.random_int(min=70000000, max=79999999)),
         "address": faker.address(),
-        "is_active":True,
-        "level":"PRIMARY"
+        "is_active": True,
+        "level": "PRIMARY",
     }
-    
-    mock_hospital_data_2 = {
+    hospital_2 = {
         "hospital_name": f"{faker.company()} Hospital",
         "hospital_phone": str(faker.random_int(min=70000000, max=79999999)),
         "address": faker.address(),
-        "is_active":True,
-        "level":"SECONDARY"
+        "is_active": True,
+        "level": "SECONDARY",
     }
-    
-    client.post("/hospitals/", json=mock_hospital_data_1)
-    client.post("/hospitals/", json=mock_hospital_data_2)
-    
-    response = client.get("/hospitals/")
-    hospital_list = response.json()["items"]
-    assert len(hospital_list) >= 2
-    assert isinstance(hospital_list, list)
+
+    await client.post("/hospitals/", json=hospital_1)
+    await client.post("/hospitals/", json=hospital_2)
+
+    response = await client.get("/hospitals/")
     assert response.status_code == 200
-    
-    retrieved_phones = [hospital["hospital_phone"] for hospital in hospital_list]
-    
-    assert mock_hospital_data_1["hospital_phone"] in retrieved_phones
-    assert mock_hospital_data_2["hospital_phone"] in retrieved_phones
-    
-    
-    
-    
+    hospital_list = response.json()["items"]
+    assert isinstance(hospital_list, list)
+    assert len(hospital_list) >= 2
+
+    retrieved_phones = [h["hospital_phone"] for h in hospital_list]
+    assert hospital_1["hospital_phone"] in retrieved_phones
+    assert hospital_2["hospital_phone"] in retrieved_phones

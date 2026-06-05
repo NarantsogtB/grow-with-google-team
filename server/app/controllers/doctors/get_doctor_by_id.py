@@ -15,7 +15,7 @@ def get_doctor_by_id(db: Database, doctor_id: UUID) -> Doctor:
         logger.error(f"{doctor_id} - тай эмч дататбаззаас олдсонгүй.")  
         raise DoctorNotFoundError(doctor_id=doctor_id)
         
-    if hasattr(existing_doctor, 'is_active') and existing_doctor.is_active is False:  
+    if not existing_doctor.is_active:
         logger.warning(f"{existing_doctor.id} - тэй эмчийн статус идэвхгүй байна.")  
         raise DoctorNotActiveError(doctor_id=str(doctor_id))
     

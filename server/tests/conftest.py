@@ -31,7 +31,9 @@
 import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
+from sqlalchemy import StaticPool, create_engine
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.orm import sessionmaker
 
 # Import all model classes to register them in Base.metadata before create_all
 import app.models.doctor    # noqa: F401
@@ -39,6 +41,7 @@ import app.models.hospital  # noqa: F401
 import app.models.patient   # noqa: F401
 import app.models.schedule  # noqa: F401
 from app.core.database import get_db
+from app.database import get_db as legacy_get_db
 from app.main import app
 from app.models.base import Base
 
@@ -107,19 +110,34 @@ async def client(db_session: AsyncSession) -> AsyncClient:
             response = await client.post("/api/v1/patients/", json={...})
             assert response.status_code == 201
     """
-    # Override the database dependency with our test session
+    # Sync SQLite engine for legacy routes that use app.database.get_db
+    sync_engine = create_engine(
+        "sqlite://",
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+    )
+    Base.metadata.create_all(sync_engine)
+    SyncTestSession = sessionmaker(autocommit=False, autoflush=False, bind=sync_engine)
+
+    def override_legacy_get_db():
+        db = SyncTestSession()
+        try:
+            yield db
+        finally:
+            db.close()
+
     async def override_get_db():
         yield db_session
 
     app.dependency_overrides[get_db] = override_get_db
+    app.dependency_overrides[legacy_get_db] = override_legacy_get_db
 
-    # ASGITransport bypasses the HTTP layer — requests go directly into FastAPI
-    # This is much faster and more reliable than a real HTTP server
     async with AsyncClient(
         transport=ASGITransport(app=app),
         base_url="http://test",
     ) as ac:
         yield ac
 
-    # Always clean up dependency overrides after each test
     app.dependency_overrides.clear()
+    Base.metadata.drop_all(sync_engine)
+    sync_engine.dispose()

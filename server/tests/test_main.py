@@ -9,4 +9,4 @@ client = TestClient(app)
 def test_helth_check():
     response=client.get("/health")
     assert response.status_code == 200
-    assert response.json() == {"message":"server is running", "status":"online", "version":"v1"} 
+    assert response.json() == {"message": "server is running", "status": "online", "version": "0.2.0"} 
