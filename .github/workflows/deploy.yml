@@ -20,6 +20,7 @@ jobs:
           username: ${{ secrets.VM_USERNAME }}
           key: ${{ secrets.VM_SSH_KEY }}
           script: |
+            export PATH="$HOME/.bun/bin:$PATH"
             cd ~/grow-with-google-team
             git pull origin main
 
