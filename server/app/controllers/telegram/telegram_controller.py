@@ -9,6 +9,10 @@ from app.utils.telegram_client import answer_callback_query
 
 
 async def handle_telegram_update(db: Session, update: dict):
+    # Empty payload үед test {"ok": True} хүлээж байгаа
+    if not update:
+        return {"ok": True}
+
     # 1. Patient /start хийсэн үед chat_id хадгалах
     if "message" in update:
         message = update["message"]
@@ -30,7 +34,7 @@ async def handle_telegram_update(db: Session, update: dict):
                     patient.telegram_chat_id = chat_id
                     db.commit()
 
-        return
+        return {"ok": True}
 
     # 2. Button дарсан үед confirm/cancel хийх
     if "callback_query" in update:
@@ -55,3 +59,7 @@ async def handle_telegram_update(db: Session, update: dict):
                 callback_id,
                 "Таны гэрийн эргэлтийн хуваарь цуцлагдлаа.",
             )
+
+        return {"ok": True}
+
+    return {"ok": True}

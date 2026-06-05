@@ -7,7 +7,7 @@ from app.database import get_db
 from app.controllers.visit_slots.visit_slot_controller import (
     create_visit_slot,
     get_visit_slots,
-    get_visit_slot_by_id,
+    get_visit_slot,
     get_visit_slots_by_doctor_id,
     update_visit_slot,
     delete_visit_slot,
@@ -43,7 +43,7 @@ def get_slot(
     slot_id: UUID,
     db: Session = Depends(get_db),
 ):
-    return get_visit_slot_by_id(db, slot_id)
+    return get_visit_slot(db, slot_id)
 
 
 @router.get("/doctor/{doctor_id}")
