@@ -1,5 +1,6 @@
 import logging
-from datetime import date as DateType, datetime, time, timedelta, timezone
+from datetime import date as DateType
+from datetime import datetime, time, timedelta, timezone
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -71,7 +72,9 @@ def _parse_intent(text: str) -> str:
     return "unknown"
 
 
-async def _recalculate_route(db: AsyncSession, visit_date: DateType, doctor_id: str) -> None:
+async def _recalculate_route(
+    db: AsyncSession, visit_date: DateType, doctor_id: str
+) -> None:
     repo = DailyVisitPlanRepository(db)
     plans = await repo.get_active_by_date_doctor(visit_date, doctor_id)
     patients = [await PatientRepository(db).get_by_id(str(p.patient_id)) for p in plans]
@@ -93,7 +96,9 @@ async def _recalculate_route(db: AsyncSession, visit_date: DateType, doctor_id: 
         await repo.update_order_and_time(pl.id, i + 1, new_time)
     logger.info(
         "Route recalculated for doctor %s on %s: %d stops",
-        doctor_id, visit_date, len(ordered),
+        doctor_id,
+        visit_date,
+        len(ordered),
     )
 
 

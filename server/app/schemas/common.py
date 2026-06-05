@@ -34,6 +34,7 @@ class PaginatedResponse(BaseModel, Generic[T]):
         "size": 10
     }
     """
+
     items: List[T]
     total: int
     page: int
@@ -44,5 +45,6 @@ class PaginatedResponse(BaseModel, Generic[T]):
 
 class DeleteResponse(BaseModel):
     """Standard response for DELETE operations."""
+
     message: str
     success: bool

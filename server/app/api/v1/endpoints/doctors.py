@@ -17,23 +17,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import Database
 from app.core.security import create_access_token, verify_password
-from app.exceptions import (
-    DoctorAlreadyExistsError,
-    DoctorNotActiveError,
-    DoctorNotFoundError,
-    DoctorUpdateEmptyError,
-    WebAppError,
-)
+from app.exceptions import (DoctorAlreadyExistsError, DoctorNotActiveError,
+                            DoctorNotFoundError, DoctorUpdateEmptyError,
+                            WebAppError)
 from app.repositories.doctor_repo import DoctorRepository
 from app.schemas.common import PaginatedResponse
-from app.schemas.doctor import (
-    DoctorCreate,
-    DoctorLoginRequest,
-    DoctorLoginResponse,
-    DoctorResponse,
-    DoctorUpdate,
-    DoctorUpdateResponse,
-)
+from app.schemas.doctor import (DoctorCreate, DoctorLoginRequest,
+                                DoctorLoginResponse, DoctorResponse,
+                                DoctorUpdate, DoctorUpdateResponse)
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/doctors", tags=["Doctors"])
@@ -44,9 +35,13 @@ async def login_doctor(credentials: DoctorLoginRequest, db: Database):
     repo = DoctorRepository(db)
     doctor = await repo.get_by_email(credentials.email)
     if not doctor or not doctor.password:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials"
+        )
     if not verify_password(credentials.password, doctor.password):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials"
+        )
     token = create_access_token(str(doctor.id))
     return DoctorLoginResponse(
         access_token=token,
@@ -140,7 +135,9 @@ async def modify_doctor(
     try:
         repo = DoctorRepository(db)
         updated = await repo.update(doctor_id, doctor_data)
-        return DoctorUpdateResponse(message="Мэдээлэл амжилттай шинэчлэлээ", data=updated)
+        return DoctorUpdateResponse(
+            message="Мэдээлэл амжилттай шинэчлэлээ", data=updated
+        )
     except DoctorNotFoundError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     except DoctorUpdateEmptyError as e:

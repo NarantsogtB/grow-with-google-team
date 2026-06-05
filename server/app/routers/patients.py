@@ -1,7 +1,6 @@
+import logging
 from datetime import datetime, timedelta, timezone
 from uuid import UUID
-
-import logging
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from jose import jwt
@@ -46,9 +45,7 @@ def _create_access_token(subject: str) -> str:
 def create_patient(patient: PatientCreate, db: Session = Depends(get_db)):
     # Check if this phone number is already registered
     existing_patient = (
-        db.query(Patient)
-        .filter(Patient.phone_number == patient.phone_number)
-        .first()
+        db.query(Patient).filter(Patient.phone_number == patient.phone_number).first()
     )
 
     if existing_patient:
@@ -79,7 +76,9 @@ def create_patient(patient: PatientCreate, db: Session = Depends(get_db)):
         db.refresh(new_patient)
     except Exception as e:
         db.rollback()
-        logging.getLogger(__name__).exception("Database error during patient creation: %s", e)
+        logging.getLogger(__name__).exception(
+            "Database error during patient creation: %s", e
+        )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Өгөгдлийн санд алдаа гарлаа. Дахин оролдоно уу.",
@@ -93,9 +92,7 @@ def create_patient(patient: PatientCreate, db: Session = Depends(get_db)):
 def login_patient(payload: LoginRequest, db: Session = Depends(get_db)):
     # Fetch patient by phone number
     patient = (
-        db.query(Patient)
-        .filter(Patient.phone_number == payload.phone_number)
-        .first()
+        db.query(Patient).filter(Patient.phone_number == payload.phone_number).first()
     )
 
     # Verify both existence and password in one check to prevent
@@ -126,7 +123,9 @@ def get_patients(
     # page=1 means "first page", size=10 means "10 records per page".
     # ge=1 and le=100 are validation constraints (min 1, max 100).
     page: int = Query(default=1, ge=1, description="Хуудасны дугаар"),
-    size: int = Query(default=10, ge=1, le=100, description="Нэг хуудсанд харуулах тоо"),
+    size: int = Query(
+        default=10, ge=1, le=100, description="Нэг хуудсанд харуулах тоо"
+    ),
     db: Session = Depends(get_db),
 ):
     offset = (page - 1) * size  # e.g. page=2, size=10 → skip first 10 rows

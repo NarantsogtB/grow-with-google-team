@@ -57,8 +57,7 @@ async def handle_schedule_update(
         return {
             **state,
             "final_response": (
-                "Хуваарийн ID эсвэл оршин суугчийн ID олдсонгүй. "
-                "Дахин зааж өгнө үү."
+                "Хуваарийн ID эсвэл оршин суугчийн ID олдсонгүй. " "Дахин зааж өгнө үү."
             ),
         }
 
@@ -75,7 +74,9 @@ async def handle_schedule_update(
             f"Үлдсэн зай: {result.get('remaining_capacity', 'тодорхойгүй')}"
         )
     else:
-        response = f"Хуваарь шинэчлэхэд алдаа гарлаа: {result.get('error', 'Unknown error')}"
+        response = (
+            f"Хуваарь шинэчлэхэд алдаа гарлаа: {result.get('error', 'Unknown error')}"
+        )
 
     return {
         **state,

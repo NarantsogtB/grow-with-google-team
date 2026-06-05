@@ -89,9 +89,9 @@ class TestCalculateShortestRoute:
         """
         # These are the fake coordinates our mock will return
         fake_coords = {
-            "///start.point.here": (47.91, 106.88),   # Starting point
-            "///close.location.b": (47.92, 106.88),   # ~1 km north
-            "///far.location.c":   (47.91, 106.94),   # ~5 km east
+            "///start.point.here": (47.91, 106.88),  # Starting point
+            "///close.location.b": (47.92, 106.88),  # ~1 km north
+            "///far.location.c": (47.91, 106.94),  # ~5 km east
         }
 
         async def mock_w3w_to_coords(address: str):
@@ -108,18 +108,27 @@ class TestCalculateShortestRoute:
         result = await calculate_shortest_route_tool(list(fake_coords.keys()))
 
         assert result[0] == "///start.point.here", "Start point should remain first"
-        assert result[1] == "///close.location.b", "Closer location should be visited second"
-        assert result[2] == "///far.location.c", "Farther location should be visited last"
+        assert (
+            result[1] == "///close.location.b"
+        ), "Closer location should be visited second"
+        assert (
+            result[2] == "///far.location.c"
+        ), "Farther location should be visited last"
 
     @pytest.mark.asyncio
     async def test_two_locations_always_returns_both(self, mocker):
         """With 2 locations, the route must contain exactly both."""
         mocker.patch(
             "app.tools.route_tools.w3w_to_coords",
-            side_effect=lambda addr: {"///loc.a.here": (47.9, 106.8), "///loc.b.there": (47.95, 106.85)}[addr],
+            side_effect=lambda addr: {
+                "///loc.a.here": (47.9, 106.8),
+                "///loc.b.there": (47.95, 106.85),
+            }[addr],
         )
 
-        result = await calculate_shortest_route_tool(["///loc.a.here", "///loc.b.there"])
+        result = await calculate_shortest_route_tool(
+            ["///loc.a.here", "///loc.b.there"]
+        )
         assert len(result) == 2
         assert "///loc.a.here" in result
         assert "///loc.b.there" in result
@@ -133,4 +142,6 @@ class TestCalculateShortestRoute:
         )
 
         with pytest.raises(Exception, match="W3W API unavailable"):
-            await calculate_shortest_route_tool(["///some.w3w.address", "///another.w3w.address"])
+            await calculate_shortest_route_tool(
+                ["///some.w3w.address", "///another.w3w.address"]
+            )

@@ -33,7 +33,9 @@ class ConsultationRepository(BaseRepository[Consultation]):
                     .offset(offset)
                     .limit(size)
                 )
-            ).scalars().all()
+            )
+            .scalars()
+            .all()
         )
         return items, total
 
@@ -54,6 +56,8 @@ class ConsultationRepository(BaseRepository[Consultation]):
                     .offset(offset)
                     .limit(size)
                 )
-            ).scalars().all()
+            )
+            .scalars()
+            .all()
         )
         return items, total

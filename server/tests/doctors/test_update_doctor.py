@@ -57,7 +57,9 @@ async def test_update_doctor_fail(client: AsyncClient, faker):
     assert create_resp.status_code == 201
     doctor_id = create_resp.json()["id"]
 
-    response = await client.put(f"/doctors/{doctor_id}", json={"first_name": None, "last_name": None})
+    response = await client.put(
+        f"/doctors/{doctor_id}", json={"first_name": None, "last_name": None}
+    )
     data = response.json()
     assert response.status_code == 500
     assert "server error" in data["detail"]

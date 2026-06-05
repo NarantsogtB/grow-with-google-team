@@ -9,11 +9,17 @@ async def test_register_doctor_success(client: AsyncClient, faker):
     mock_doctor_data = {
         "first_name": faker.first_name(),
         "last_name": faker.last_name(),
-        "gender": faker.random_element(elements=(GenderEnum.MALE.value, GenderEnum.FEMALE.value)),
+        "gender": faker.random_element(
+            elements=(GenderEnum.MALE.value, GenderEnum.FEMALE.value)
+        ),
         "phone": str(faker.random_int(min=50000000, max=99999999)),
         "email": faker.unique.email(),
         "role": faker.random_element(
-            elements=(DoctorRoleEnum.GENERAL.value, DoctorRoleEnum.PEDIATRICIAN.value, DoctorRoleEnum.NURSE.value)
+            elements=(
+                DoctorRoleEnum.GENERAL.value,
+                DoctorRoleEnum.PEDIATRICIAN.value,
+                DoctorRoleEnum.NURSE.value,
+            )
         ),
         "assigned_sector": f"{faker.random_int(1, 50):02d}",
         "telegram_id": str(faker.random_int(min=100000000, max=999999999)),
@@ -71,4 +77,7 @@ async def test_register_doctor_duplicate_phone(client: AsyncClient, faker):
 
     failed_response = await client.post("/doctors/", json=doctor_data_2)
     assert failed_response.status_code == 400
-    assert failed_response.json()["detail"] == f"{doctor_data_2['phone']} энэ утасны дугаартай эмч бүртгэлтэй байна."
+    assert (
+        failed_response.json()["detail"]
+        == f"{doctor_data_2['phone']} энэ утасны дугаартай эмч бүртгэлтэй байна."
+    )

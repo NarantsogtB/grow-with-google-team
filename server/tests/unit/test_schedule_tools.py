@@ -18,7 +18,8 @@ from app.models.doctor import Doctor
 from app.models.enums import DayOfWeekEnum, DoctorRoleEnum, GenderEnum
 from app.models.hospital import Hospital
 from app.models.schedule import DoctorWeeklySchedule
-from app.tools.schedule_tools import get_daily_schedule_summary, reorder_schedule_tool
+from app.tools.schedule_tools import (get_daily_schedule_summary,
+                                      reorder_schedule_tool)
 
 
 async def _create_test_doctor(db_session) -> Doctor:

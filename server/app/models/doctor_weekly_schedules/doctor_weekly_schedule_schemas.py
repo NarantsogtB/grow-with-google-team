@@ -11,6 +11,7 @@ class DoctorWeeklyScheduleBase(BaseModel):
     """
     Эмчийн 7 хоног бүр давтагдах гэрийн эргэлтийн хуваарийн үндсэн schema.
     """
+
     doctor_id: UUID
     day_of_week: DayOfWeekEnum
     start_time: time

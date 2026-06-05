@@ -159,8 +159,10 @@ async def calculate_shortest_route_tool(w3w_locations: List[str]) -> List[str]:
         nearest = min(
             unvisited,
             key=lambda w: haversine_km(
-                current_lat, current_lon,
-                coords[w][0], coords[w][1],
+                current_lat,
+                current_lon,
+                coords[w][0],
+                coords[w][1],
             ),
         )
 

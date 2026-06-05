@@ -5,8 +5,8 @@ Requires the backend server running at http://localhost:8000
 """
 
 import json
-import urllib.request
 import urllib.error
+import urllib.request
 
 BASE = "http://localhost:8000"
 OK = "\033[92m✓\033[0m"
@@ -21,7 +21,9 @@ def post(path: str, body: dict, token: str | None = None) -> dict | None:
     headers = {"Content-Type": "application/json"}
     if token:
         headers["Authorization"] = f"Bearer {token}"
-    req = urllib.request.Request(f"{BASE}{path}", data=data, headers=headers, method="POST")
+    req = urllib.request.Request(
+        f"{BASE}{path}", data=data, headers=headers, method="POST"
+    )
     try:
         with urllib.request.urlopen(req) as resp:
             return json.loads(resp.read())
@@ -116,7 +118,9 @@ for d in doctors_data:
     r = post("/api/v1/doctors/", d)
     if r:
         doctor_ids.append(r["id"])
-        print(f"  {OK}  Dr. {d['first_name']} {d['last_name']} (sector: {d['assigned_sector']})")
+        print(
+            f"  {OK}  Dr. {d['first_name']} {d['last_name']} (sector: {d['assigned_sector']})"
+        )
         created["doctors"] += 1
     else:
         doctor_ids.append(None)
@@ -136,7 +140,8 @@ patients_data = [
         "phone_number": "99112201",
         "password": "patient123",
         "address_text": "Баянгол дүүрэг, 14-р хороо, Нарт орон сууц 4-р байр 12",
-        "latitude": 47.9121, "longitude": 106.9012,
+        "latitude": 47.9121,
+        "longitude": 106.9012,
         "sector": "14",
         "telegram_chat_id": "@munkh_dorj",
     },
@@ -145,7 +150,8 @@ patients_data = [
         "phone_number": "99112202",
         "password": "patient123",
         "address_text": "Баянгол дүүрэг, 14-р хороо, Тэнгэр апарт 2-р байр 5",
-        "latitude": 47.9115, "longitude": 106.9020,
+        "latitude": 47.9115,
+        "longitude": 106.9020,
         "sector": "14",
     },
     {
@@ -153,7 +159,8 @@ patients_data = [
         "phone_number": "99112203",
         "password": "patient123",
         "address_text": "Баянгол дүүрэг, 14-р хороо, Гэр хороолол Б-14, 220 тоот",
-        "latitude": 47.9130, "longitude": 106.9005,
+        "latitude": 47.9130,
+        "longitude": 106.9005,
         "sector": "14",
     },
     {
@@ -161,7 +168,8 @@ patients_data = [
         "phone_number": "99112204",
         "password": "patient123",
         "address_text": "Баянгол дүүрэг, 14-р хороо, Туул цогцолбор 10-р байр 34",
-        "latitude": 47.9108, "longitude": 106.9035,
+        "latitude": 47.9108,
+        "longitude": 106.9035,
         "sector": "14",
         "telegram_chat_id": "@ganbaatar_mend",
     },
@@ -170,7 +178,8 @@ patients_data = [
         "phone_number": "99112205",
         "password": "patient123",
         "address_text": "Баянгол дүүрэг, 14-р хороо, Нарнай хороолол 7-р байр 21",
-        "latitude": 47.9140, "longitude": 106.9000,
+        "latitude": 47.9140,
+        "longitude": 106.9000,
         "sector": "14",
     },
     {
@@ -178,7 +187,8 @@ patients_data = [
         "phone_number": "99112206",
         "password": "patient123",
         "address_text": "Баянгол дүүрэг, 14-р хороо, Туул апарт 15-р байр 8",
-        "latitude": 47.9095, "longitude": 106.9045,
+        "latitude": 47.9095,
+        "longitude": 106.9045,
         "sector": "14",
     },
     {
@@ -186,7 +196,8 @@ patients_data = [
         "phone_number": "99112207",
         "password": "patient123",
         "address_text": "Баянгол дүүрэг, 14-р хороо, Хан-Уул хашаа 22",
-        "latitude": 47.9155, "longitude": 106.8990,
+        "latitude": 47.9155,
+        "longitude": 106.8990,
         "sector": "14",
         "telegram_chat_id": "@enkhjargal_s",
     },
@@ -195,7 +206,8 @@ patients_data = [
         "phone_number": "99112208",
         "password": "patient123",
         "address_text": "Баянгол дүүрэг, 14-р хороо, Цэнгэл хороолол 3-р байр 17",
-        "latitude": 47.9100, "longitude": 106.9055,
+        "latitude": 47.9100,
+        "longitude": 106.9055,
         "sector": "14",
     },
     # Sector 12 — Dr. Болд
@@ -204,7 +216,8 @@ patients_data = [
         "phone_number": "99112209",
         "password": "patient123",
         "address_text": "Баянгол дүүрэг, 12-р хороо, Наран апарт 8-р байр 3",
-        "latitude": 47.9200, "longitude": 106.8950,
+        "latitude": 47.9200,
+        "longitude": 106.8950,
         "sector": "12",
     },
     {
@@ -212,7 +225,8 @@ patients_data = [
         "phone_number": "99112210",
         "password": "patient123",
         "address_text": "Баянгол дүүрэг, 12-р хороо, Тэнгэр хороолол 5-р байр",
-        "latitude": 47.9195, "longitude": 106.8940,
+        "latitude": 47.9195,
+        "longitude": 106.8940,
         "sector": "12",
         "telegram_chat_id": "@ariunaa_j",
     },
@@ -221,7 +235,8 @@ patients_data = [
         "phone_number": "99112211",
         "password": "patient123",
         "address_text": "Баянгол дүүрэг, 12-р хороо, Гэр хороолол В-12, 315",
-        "latitude": 47.9210, "longitude": 106.8960,
+        "latitude": 47.9210,
+        "longitude": 106.8960,
         "sector": "12",
     },
     {
@@ -229,7 +244,8 @@ patients_data = [
         "phone_number": "99112212",
         "password": "patient123",
         "address_text": "Баянгол дүүрэг, 12-р хороо, Баянгол центр 17-р байр 9",
-        "latitude": 47.9185, "longitude": 106.8935,
+        "latitude": 47.9185,
+        "longitude": 106.8935,
         "sector": "12",
     },
     # Sector 8 — Dr. Энхтуяа
@@ -238,7 +254,8 @@ patients_data = [
         "phone_number": "99112213",
         "password": "patient123",
         "address_text": "Сүхбаатар дүүрэг, 8-р хороо, Их дэлгүүрийн орчим, 14",
-        "latitude": 47.9050, "longitude": 106.9200,
+        "latitude": 47.9050,
+        "longitude": 106.9200,
         "sector": "8",
     },
     {
@@ -246,7 +263,8 @@ patients_data = [
         "phone_number": "99112214",
         "password": "patient123",
         "address_text": "Сүхбаатар дүүрэг, 8-р хороо, Туул гудамж 14-р байр",
-        "latitude": 47.9060, "longitude": 106.9210,
+        "latitude": 47.9060,
+        "longitude": 106.9210,
         "sector": "8",
         "telegram_chat_id": "@nomini_d",
     },
@@ -255,7 +273,8 @@ patients_data = [
         "phone_number": "99112215",
         "password": "patient123",
         "address_text": "Сүхбаатар дүүрэг, 8-р хороо, Хан-Уул байшин 9-р байр 22",
-        "latitude": 47.9045, "longitude": 106.9195,
+        "latitude": 47.9045,
+        "longitude": 106.9195,
         "sector": "8",
     },
 ]
@@ -283,14 +302,17 @@ for doctor_id, label in schedule_assignments:
         print(f"  {ERR}  {label} — doctor not created, skipping schedules")
         continue
     for day in DAYS:
-        r = post("/api/v1/schedules/", {
-            "doctor_id": doctor_id,
-            "day_of_week": day,
-            "start_time": "09:00:00",
-            "end_time": "17:00:00",
-            "max_patients": 5,
-            "is_active": True,
-        })
+        r = post(
+            "/api/v1/schedules/",
+            {
+                "doctor_id": doctor_id,
+                "day_of_week": day,
+                "start_time": "09:00:00",
+                "end_time": "17:00:00",
+                "max_patients": 5,
+                "is_active": True,
+            },
+        )
         if r:
             created["schedules"] += 1
 
@@ -313,5 +335,7 @@ if errors:
     for e in errors:
         print(f"   - {e}")
     print("\nЗааврууд:")
-    print("  1. Backend ажиллаж байгаа эсэхийг шалгана уу: cd server && uvicorn app.main:app")
+    print(
+        "  1. Backend ажиллаж байгаа эсэхийг шалгана уу: cd server && uvicorn app.main:app"
+    )
     print("  2. Мэдээлэл давхардаж байвал: Аль хэдийн бүртгэлтэй байж болно")

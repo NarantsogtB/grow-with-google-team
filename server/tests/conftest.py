@@ -32,13 +32,14 @@ import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy import StaticPool, create_engine
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.ext.asyncio import (AsyncSession, async_sessionmaker,
+                                    create_async_engine)
 from sqlalchemy.orm import sessionmaker
 
 # Import all model classes to register them in Base.metadata before create_all
-import app.models.doctor    # noqa: F401
+import app.models.doctor  # noqa: F401
 import app.models.hospital  # noqa: F401
-import app.models.patient   # noqa: F401
+import app.models.patient  # noqa: F401
 import app.models.schedule  # noqa: F401
 from app.core.database import get_db
 from app.database import get_db as legacy_get_db

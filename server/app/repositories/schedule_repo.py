@@ -19,7 +19,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.doctor import Doctor
 from app.models.schedule import DoctorWeeklySchedule
 from app.repositories.base import BaseRepository
-from app.schemas.schedule import DoctorWeeklyScheduleCreate, DoctorWeeklyScheduleUpdate
+from app.schemas.schedule import (DoctorWeeklyScheduleCreate,
+                                  DoctorWeeklyScheduleUpdate)
 
 logger = logging.getLogger(__name__)
 

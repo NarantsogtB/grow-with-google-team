@@ -155,14 +155,20 @@ async def structure_soap_note(raw_transcription: str) -> dict:
     except json.JSONDecodeError:
         logger.warning("SOAP agent returned non-JSON response: %s", response_text[:200])
         return {
-            "S": None, "O": None, "A": None, "P": None,
+            "S": None,
+            "O": None,
+            "A": None,
+            "P": None,
             "raw": raw_transcription,
             "error": "AI буцаасан өгөгдлийг задлан шинжлэхэд алдаа гарлаа",
         }
     except Exception as e:
         logger.exception("SOAP agent failed: %s", e)
         return {
-            "S": None, "O": None, "A": None, "P": None,
+            "S": None,
+            "O": None,
+            "A": None,
+            "P": None,
             "raw": raw_transcription,
             "error": str(e),
         }

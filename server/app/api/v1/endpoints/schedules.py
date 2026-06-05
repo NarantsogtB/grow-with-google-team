@@ -11,17 +11,19 @@ from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import Database
-from app.schemas.schedule import (
-    DoctorWeeklyScheduleCreate,
-    DoctorWeeklyScheduleResponse,
-    DoctorWeeklyScheduleUpdate,
-)
+from app.schemas.schedule import (DoctorWeeklyScheduleCreate,
+                                  DoctorWeeklyScheduleResponse,
+                                  DoctorWeeklyScheduleUpdate)
 from app.services.schedule_service import ScheduleService
 
 router = APIRouter(prefix="/schedules", tags=["Doctor Weekly Schedules"])
 
 
-@router.post("/", response_model=DoctorWeeklyScheduleResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/",
+    response_model=DoctorWeeklyScheduleResponse,
+    status_code=status.HTTP_201_CREATED,
+)
 async def create_schedule(
     data: DoctorWeeklyScheduleCreate,
     db: Database,

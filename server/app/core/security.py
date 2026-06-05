@@ -87,7 +87,9 @@ def create_access_token(subject: str) -> str:
         # "exp" (expiry) is a Unix timestamp; jose will reject tokens past this time
         "exp": expire,
     }
-    return jwt.encode(payload, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
+    return jwt.encode(
+        payload, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM
+    )
 
 
 def decode_access_token(token: str) -> str:

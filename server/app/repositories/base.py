@@ -56,12 +56,12 @@ class BaseRepository(Generic[ModelType]):
 
     async def get_by_id(self, id) -> Optional[ModelType]:
         """Fetch a single record by primary key. Returns None if not found."""
-        result = await self.db.execute(
-            select(self.model).where(self.model.id == id)
-        )
+        result = await self.db.execute(select(self.model).where(self.model.id == id))
         return result.scalar_one_or_none()
 
-    async def get_all(self, page: int = 1, size: int = 10) -> Tuple[List[ModelType], int]:
+    async def get_all(
+        self, page: int = 1, size: int = 10
+    ) -> Tuple[List[ModelType], int]:
         """
         Fetch a paginated list and the total count.
 
@@ -78,9 +78,7 @@ class BaseRepository(Generic[ModelType]):
         total = count_result.scalar()
 
         # Paginated data fetch
-        result = await self.db.execute(
-            select(self.model).offset(offset).limit(size)
-        )
+        result = await self.db.execute(select(self.model).offset(offset).limit(size))
         items = list(result.scalars().all())
 
         return items, total
@@ -93,8 +91,8 @@ class BaseRepository(Generic[ModelType]):
         does NOT commit. The calling endpoint's get_db() handles the commit.
         """
         self.db.add(obj)
-        await self.db.flush()      # execute INSERT, get back generated UUID
-        await self.db.refresh(obj) # reload the object with DB-generated values
+        await self.db.flush()  # execute INSERT, get back generated UUID
+        await self.db.refresh(obj)  # reload the object with DB-generated values
         return obj
 
     async def delete(self, obj: ModelType) -> None:

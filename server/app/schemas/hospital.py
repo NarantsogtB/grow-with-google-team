@@ -26,6 +26,7 @@ class HospitalCreate(HospitalBase):
 
 class HospitalUpdate(BaseModel):
     """All fields optional — only send what needs changing."""
+
     hospital_name: Optional[str] = None
     hospital_phone: Optional[str] = None
     address: Optional[str] = None

@@ -15,16 +15,13 @@ import logging
 from typing import Optional
 from uuid import UUID
 
-from sqlalchemy import delete as sql_delete, select, update
+from sqlalchemy import delete as sql_delete
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
-from app.exceptions import (
-    DoctorAlreadyExistsError,
-    DoctorNotActiveError,
-    DoctorNotFoundError,
-    DoctorUpdateEmptyError,
-)
+from app.exceptions import (DoctorAlreadyExistsError, DoctorNotActiveError,
+                            DoctorNotFoundError, DoctorUpdateEmptyError)
 from app.models.doctor import Doctor
 from app.repositories.base import BaseRepository
 from app.schemas.doctor import DoctorUpdate
@@ -47,16 +44,12 @@ class DoctorRepository(BaseRepository[Doctor]):
 
     async def get_by_phone(self, phone: str) -> Optional[Doctor]:
         """Check if a phone number is already registered."""
-        result = await self.db.execute(
-            select(Doctor).where(Doctor.phone == phone)
-        )
+        result = await self.db.execute(select(Doctor).where(Doctor.phone == phone))
         return result.scalar_one_or_none()
 
     async def get_by_email(self, email: str) -> Optional[Doctor]:
         """Look up a doctor by email address (used for login)."""
-        result = await self.db.execute(
-            select(Doctor).where(Doctor.email == email)
-        )
+        result = await self.db.execute(select(Doctor).where(Doctor.email == email))
         return result.scalar_one_or_none()
 
     async def get_active_by_id(self, doctor_id: UUID) -> Doctor:
@@ -74,7 +67,9 @@ class DoctorRepository(BaseRepository[Doctor]):
         """
         result = await self.db.execute(
             select(Doctor)
-            .options(joinedload(Doctor.hospital))  # prevents N+1 / async lazy-load error
+            .options(
+                joinedload(Doctor.hospital)
+            )  # prevents N+1 / async lazy-load error
             .where(Doctor.id == doctor_id)
         )
         doctor = result.scalar_one_or_none()
@@ -141,9 +136,7 @@ class DoctorRepository(BaseRepository[Doctor]):
 
     async def delete(self, doctor_id: UUID) -> None:
         """Permanently remove a doctor from the database."""
-        result = await self.db.execute(
-            sql_delete(Doctor).where(Doctor.id == doctor_id)
-        )
+        result = await self.db.execute(sql_delete(Doctor).where(Doctor.id == doctor_id))
         if result.rowcount == 0:
             raise DoctorNotFoundError(doctor_id=doctor_id)
         await self.db.flush()

@@ -45,7 +45,9 @@ async def test_read_doctor_by_id_not_active(client: AsyncClient, faker):
     assert create_resp.status_code == status.HTTP_201_CREATED
     doctor_id = create_resp.json()["id"]
 
-    deactivate_resp = await client.put(f"/doctors/{doctor_id}", json={"is_active": False})
+    deactivate_resp = await client.put(
+        f"/doctors/{doctor_id}", json={"is_active": False}
+    )
     assert deactivate_resp.status_code == 200
 
     response = await client.get(f"/doctors/{doctor_id}")

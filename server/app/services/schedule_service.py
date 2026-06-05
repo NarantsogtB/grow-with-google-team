@@ -13,11 +13,9 @@ from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.repositories.schedule_repo import ScheduleRepository
-from app.schemas.schedule import (
-    DoctorWeeklyScheduleCreate,
-    DoctorWeeklyScheduleResponse,
-    DoctorWeeklyScheduleUpdate,
-)
+from app.schemas.schedule import (DoctorWeeklyScheduleCreate,
+                                  DoctorWeeklyScheduleResponse,
+                                  DoctorWeeklyScheduleUpdate)
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +58,9 @@ class ScheduleService:
         except ValueError as e:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
-    async def get_by_doctor(self, doctor_id: UUID) -> List[DoctorWeeklyScheduleResponse]:
+    async def get_by_doctor(
+        self, doctor_id: UUID
+    ) -> List[DoctorWeeklyScheduleResponse]:
         """Fetch all schedule templates for a specific doctor."""
         schedules = await self.repo.get_by_doctor_id(doctor_id)
         return [DoctorWeeklyScheduleResponse.model_validate(s) for s in schedules]
@@ -81,6 +81,9 @@ class ScheduleService:
             schedule = await self.repo.get_by_id_or_raise(schedule_id)
             await self.repo.delete(schedule)
             logger.info("Schedule %s deleted", schedule_id)
-            return {"message": "Doctor weekly schedule deleted successfully", "success": True}
+            return {
+                "message": "Doctor weekly schedule deleted successfully",
+                "success": True,
+            }
         except ValueError as e:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))

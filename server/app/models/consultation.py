@@ -11,8 +11,12 @@ class Consultation(Base):
     __tablename__ = "consultations"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
-    doctor_id = Column(UUID(as_uuid=True), ForeignKey("doctors.id"), nullable=True, index=True)
-    patient_id = Column(UUID(as_uuid=True), ForeignKey("patients.id"), nullable=True, index=True)
+    doctor_id = Column(
+        UUID(as_uuid=True), ForeignKey("doctors.id"), nullable=True, index=True
+    )
+    patient_id = Column(
+        UUID(as_uuid=True), ForeignKey("patients.id"), nullable=True, index=True
+    )
     patient_name = Column(String(200), nullable=True)
     transcription = Column(Text, nullable=True)
     soap_s = Column(Text, nullable=True)

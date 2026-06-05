@@ -50,10 +50,15 @@ async def test_register_hospital_duplicate_phone(client: AsyncClient, faker):
 
     failed_response = await client.post("/hospitals/", json=hospital_2)
     assert failed_response.status_code == 400
-    assert failed_response.json()["detail"] == f"{duplicate_phone} энэ дугаартай эмнэлэг бүртгэлтэй байна."
+    assert (
+        failed_response.json()["detail"]
+        == f"{duplicate_phone} энэ дугаартай эмнэлэг бүртгэлтэй байна."
+    )
 
 
-async def test_register_hospital_rollback_on_exception(client: AsyncClient, faker, monkeypatch):
+async def test_register_hospital_rollback_on_exception(
+    client: AsyncClient, faker, monkeypatch
+):
     """It should throw exception error when database connection failed"""
     rollback_called = False
 
@@ -67,7 +72,10 @@ async def test_register_hospital_rollback_on_exception(client: AsyncClient, fake
     monkeypatch.setattr(Session, "commit", mock_commit_error)
     monkeypatch.setattr(Session, "rollback", mock_rollback)
 
-    payload = {**_hospital_payload(faker), "hospital_phone": str(faker.random_int(min=80000000, max=99999999))}
+    payload = {
+        **_hospital_payload(faker),
+        "hospital_phone": str(faker.random_int(min=80000000, max=99999999)),
+    }
     response = await client.post("/hospitals/", json=payload)
     assert response.status_code == 500
     assert rollback_called is True

@@ -31,6 +31,7 @@ class DoctorCreate(DoctorBase):
 
 class DoctorUpdate(BaseModel):
     """All fields optional — only send what needs changing."""
+
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     gender: Optional[GenderEnum] = None

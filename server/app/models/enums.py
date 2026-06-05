@@ -20,6 +20,7 @@ from enum import Enum
 
 class GenderEnum(str, Enum):
     """Doctor and patient gender classification."""
+
     FEMALE = "FEMALE"
     MALE = "MALE"
 
@@ -30,6 +31,7 @@ class PatientTypeEnum(str, Enum):
     Newborns, elderly, palliative care, and disabled patients receive
     more frequent visits than REGULAR patients.
     """
+
     NEWBORN = "NEWBORN"
     ELDERLY = "ELDERLY"
     PALLIATIVE = "PALLIATIVE"
@@ -39,6 +41,7 @@ class PatientTypeEnum(str, Enum):
 
 class ActionTypeEnum(str, Enum):
     """Type of scheduled home visit action."""
+
     REGULAR_CHECK = "REGULAR_CHECK"
     FOLLOW_UP = "FOLLOW_UP"
     EMERGENCY = "EMERGENCY"
@@ -46,6 +49,7 @@ class ActionTypeEnum(str, Enum):
 
 class DoctorRoleEnum(str, Enum):
     """Medical specialization of the doctor."""
+
     GENERAL = "GENERAL"
     PEDIATRICIAN = "PEDIATRICIAN"
     NURSE = "NURSE"
@@ -58,6 +62,7 @@ class HealthcareLevelEnum(str, Enum):
     - SECONDARY: Дүүргийн эмнэлэг (district hospital)
     - TERTIARY: Улсын эмнэлэг (national/specialized hospital)
     """
+
     PRIMARY = "PRIMARY"
     SECONDARY = "SECONDARY"
     TERTIARY = "TERTIARY"
@@ -65,6 +70,7 @@ class HealthcareLevelEnum(str, Enum):
 
 class DayOfWeekEnum(str, Enum):
     """Days of the week for recurring weekly schedules."""
+
     MONDAY = "monday"
     TUESDAY = "tuesday"
     WEDNESDAY = "wednesday"

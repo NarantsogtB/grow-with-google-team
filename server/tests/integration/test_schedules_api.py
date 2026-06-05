@@ -49,7 +49,9 @@ class TestScheduleCreation:
             },
         )
 
-        assert response.status_code == 201, f"Expected 201, got {response.status_code}: {response.json()}"
+        assert (
+            response.status_code == 201
+        ), f"Expected 201, got {response.status_code}: {response.json()}"
         data = response.json()
         assert "id" in data
         assert data["doctor_id"] == doctor_id
@@ -72,9 +74,9 @@ class TestScheduleCreation:
             },
         )
 
-        assert response.status_code == 404, (
-            f"Expected 404 for unknown doctor, got {response.status_code}"
-        )
+        assert (
+            response.status_code == 404
+        ), f"Expected 404 for unknown doctor, got {response.status_code}"
 
     @pytest.mark.asyncio
     async def test_invalid_time_range_returns_422(self, client, db_session):
@@ -137,7 +139,7 @@ class TestScheduleListing:
         schedules = response.json()
 
         # All returned schedules must belong to doctor1 only
-        assert all(s["doctor_id"] == doctor1_id for s in schedules), (
-            "Doctor 2's schedule leaked into Doctor 1's schedule list"
-        )
+        assert all(
+            s["doctor_id"] == doctor1_id for s in schedules
+        ), "Doctor 2's schedule leaked into Doctor 1's schedule list"
         assert len(schedules) == 1

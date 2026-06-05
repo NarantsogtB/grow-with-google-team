@@ -65,10 +65,14 @@ class PatientRepository(BaseRepository[Patient]):
             )
         ).scalar()
         rows = (
-            await self.db.execute(
-                select(Patient).where(where).offset(offset).limit(size)
+            (
+                await self.db.execute(
+                    select(Patient).where(where).offset(offset).limit(size)
+                )
             )
-        ).scalars().all()
+            .scalars()
+            .all()
+        )
         return list(rows), total
 
     async def get_by_telegram_chat_id(self, chat_id: str) -> Optional[Patient]:
@@ -80,23 +84,38 @@ class PatientRepository(BaseRepository[Patient]):
     async def get_with_telegram(self) -> List[Patient]:
         """Return all patients that have a Telegram chat ID set."""
         rows = (
-            await self.db.execute(
-                select(Patient).where(Patient.telegram_chat_id.isnot(None))
+            (
+                await self.db.execute(
+                    select(Patient).where(Patient.telegram_chat_id.isnot(None))
+                )
             )
-        ).scalars().all()
+            .scalars()
+            .all()
+        )
         return list(rows)
 
-    async def get_by_sector(self, sector: str, page: int, size: int) -> Tuple[List[Patient], int]:
+    async def get_by_sector(
+        self, sector: str, page: int, size: int
+    ) -> Tuple[List[Patient], int]:
         """Filter patients by geographic sector (matches doctor.assigned_sector)."""
         offset = (page - 1) * size
         total = (
             await self.db.execute(
-                select(func.count()).select_from(Patient).where(Patient.sector == sector)
+                select(func.count())
+                .select_from(Patient)
+                .where(Patient.sector == sector)
             )
         ).scalar()
         rows = (
-            await self.db.execute(
-                select(Patient).where(Patient.sector == sector).offset(offset).limit(size)
+            (
+                await self.db.execute(
+                    select(Patient)
+                    .where(Patient.sector == sector)
+                    .offset(offset)
+                    .limit(size)
+                )
             )
-        ).scalars().all()
+            .scalars()
+            .all()
+        )
         return list(rows), total

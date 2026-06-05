@@ -25,6 +25,7 @@ fake = Faker()
 
 # ── TEST DATA FACTORY ──────────────────────────────────────────────────────────
 
+
 def make_patient_payload(phone: str = None) -> dict:
     """Generate realistic patient registration data using Faker."""
     return {
@@ -40,6 +41,7 @@ def make_patient_payload(phone: str = None) -> dict:
 
 
 # ── REGISTRATION TESTS ─────────────────────────────────────────────────────────
+
 
 class TestPatientRegistration:
 
@@ -69,9 +71,9 @@ class TestPatientRegistration:
         response = await client.post("/api/v1/patients/", json=make_patient_payload())
         data = response.json()
 
-        assert "password" not in data, (
-            "SECURITY VIOLATION: password field was returned in registration response"
-        )
+        assert (
+            "password" not in data
+        ), "SECURITY VIOLATION: password field was returned in registration response"
 
     @pytest.mark.asyncio
     async def test_register_duplicate_phone_returns_400(self, client):
@@ -81,7 +83,9 @@ class TestPatientRegistration:
         """
         phone = "99112233"
         await client.post("/api/v1/patients/", json=make_patient_payload(phone=phone))
-        response = await client.post("/api/v1/patients/", json=make_patient_payload(phone=phone))
+        response = await client.post(
+            "/api/v1/patients/", json=make_patient_payload(phone=phone)
+        )
 
         assert response.status_code == 400
         detail = response.json()["detail"]
@@ -93,11 +97,14 @@ class TestPatientRegistration:
         Sending incomplete data should return 422 Unprocessable Entity.
         422 means Pydantic validation rejected the input.
         """
-        response = await client.post("/api/v1/patients/", json={"full_name": "Only Name"})
+        response = await client.post(
+            "/api/v1/patients/", json={"full_name": "Only Name"}
+        )
         assert response.status_code == 422
 
 
 # ── LOGIN TESTS ────────────────────────────────────────────────────────────────
+
 
 class TestPatientLogin:
 
@@ -147,14 +154,14 @@ class TestPatientLogin:
 
         # Verify it's a real JWT structure
         parts = token.split(".")
-        assert len(parts) == 3, (
-            f"Expected JWT with 3 dot-separated parts, got: '{token[:50]}...'"
-        )
+        assert (
+            len(parts) == 3
+        ), f"Expected JWT with 3 dot-separated parts, got: '{token[:50]}...'"
 
         # Verify the old mock pattern is gone
-        assert not token.startswith("mock_jwt_token_for_"), (
-            "Mock JWT token is still being returned — security fix not applied"
-        )
+        assert not token.startswith(
+            "mock_jwt_token_for_"
+        ), "Mock JWT token is still being returned — security fix not applied"
 
     @pytest.mark.asyncio
     async def test_login_wrong_password_returns_401(self, client):
@@ -183,6 +190,7 @@ class TestPatientLogin:
 
 
 # ── LIST/PAGINATION TESTS ──────────────────────────────────────────────────────
+
 
 class TestPatientList:
 

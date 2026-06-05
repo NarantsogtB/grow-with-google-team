@@ -72,9 +72,9 @@ _client = genai.Client(api_key=settings.GOOGLE_GEMINI_API_KEY)
 # (each node appends to the list, not replaces it). This preserves conversation history.
 class AgentState(TypedDict):
     messages: Annotated[list, operator.add]  # Full conversation history
-    intent: str          # Classified intent: "schedule_update" | "route_optimize" | "soap_note" | "general"
-    tool_result: Optional[Dict[str, Any]]   # Output from deterministic tools
-    final_response: Optional[str]           # Final response to return to the doctor
+    intent: str  # Classified intent: "schedule_update" | "route_optimize" | "soap_note" | "general"
+    tool_result: Optional[Dict[str, Any]]  # Output from deterministic tools
+    final_response: Optional[str]  # Final response to return to the doctor
 
 
 # ── NODE 1: INTENT CLASSIFIER ─────────────────────────────────────────────────
@@ -113,7 +113,9 @@ async def classify_intent(state: AgentState) -> AgentState:
         response = await _client.aio.models.generate_content(
             model="gemini-2.5-flash",
             contents=content,
-            config=types.GenerateContentConfig(system_instruction=INTENT_CLASSIFICATION_PROMPT),
+            config=types.GenerateContentConfig(
+                system_instruction=INTENT_CLASSIFICATION_PROMPT
+            ),
         )
         intent = (response.text or "general").strip().lower()
 
@@ -246,7 +248,9 @@ async def general_node(state: AgentState) -> AgentState:
         response = await _client.aio.models.generate_content(
             model="gemini-2.5-flash",
             contents=content,
-            config=types.GenerateContentConfig(system_instruction=GENERAL_SYSTEM_PROMPT),
+            config=types.GenerateContentConfig(
+                system_instruction=GENERAL_SYSTEM_PROMPT
+            ),
         )
         return {**state, "final_response": response.text or ""}
     except Exception as e:

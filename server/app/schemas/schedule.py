@@ -19,6 +19,7 @@ class DoctorWeeklyScheduleBase(BaseModel):
     Эмчийн 7 хоног бүр давтагдах гэрийн эргэлтийн хуваарийн үндсэн schema.
     (Doctor's recurring weekly home-visit schedule base schema.)
     """
+
     doctor_id: UUID
     day_of_week: DayOfWeekEnum
     start_time: time
@@ -49,6 +50,7 @@ class DoctorWeeklyScheduleUpdate(BaseModel):
     All fields optional — only send fields you want to change.
     (Бүх талбар Optional байна. Зөвхөн өөрчлөх талбараа явуулна.)
     """
+
     day_of_week: Optional[DayOfWeekEnum] = None
     start_time: Optional[time] = None
     end_time: Optional[time] = None

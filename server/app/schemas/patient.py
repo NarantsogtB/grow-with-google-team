@@ -17,6 +17,7 @@ from pydantic import BaseModel, ConfigDict
 
 class PatientBase(BaseModel):
     """Fields shared by create and response schemas."""
+
     full_name: str
     phone_number: str
     telegram_chat_id: Optional[str] = None
@@ -28,6 +29,7 @@ class PatientBase(BaseModel):
 
 class PatientCreate(PatientBase):
     """Schema for POST /patients — includes password which gets hashed before storage."""
+
     password: str
 
 
@@ -38,6 +40,7 @@ class PatientResponse(PatientBase):
         patient = db.query(Patient).first()
         PatientResponse.model_validate(patient)  # works because of from_attributes
     """
+
     id: UUID
     created_at: datetime
 
@@ -47,6 +50,7 @@ class PatientResponse(PatientBase):
 
 class PatientUpdate(BaseModel):
     """Schema for PUT /patients/me — all fields optional for partial updates."""
+
     full_name: Optional[str] = None
     address_text: Optional[str] = None
     latitude: Optional[float] = None
@@ -56,12 +60,14 @@ class PatientUpdate(BaseModel):
 
 class LoginRequest(BaseModel):
     """Schema for POST /patients/login."""
+
     phone_number: str
     password: str
 
 
 class LoginResponse(BaseModel):
     """Schema for successful login response."""
+
     message: str
     patient_id: UUID
     full_name: str

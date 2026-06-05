@@ -2,12 +2,11 @@ from uuid import UUID
 
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
+
+from app.models.doctor_weekly_schedules import (DoctorWeeklySchedule,
+                                                DoctorWeeklyScheduleCreate,
+                                                DoctorWeeklyScheduleUpdate)
 from app.models.doctors.doctor_models import Doctor
-from app.models.doctor_weekly_schedules import (
-    DoctorWeeklySchedule,
-    DoctorWeeklyScheduleCreate,
-    DoctorWeeklyScheduleUpdate,
-)
 
 
 def get_doctor_weekly_schedules(db: Session):
@@ -94,7 +93,8 @@ def delete_doctor_weekly_schedule(
     return {
         "message": "Doctor weekly schedule deleted successfully",
     }
-    
+
+
 def create_doctor_weekly_schedule(
     db: Session,
     schedule_data: DoctorWeeklyScheduleCreate,
@@ -103,11 +103,7 @@ def create_doctor_weekly_schedule(
     Эмчийн 7 хоног бүр давтагдах гэрийн эргэлтийн хуваарь үүсгэнэ.
     """
 
-    doctor = (
-        db.query(Doctor)
-        .filter(Doctor.id == schedule_data.doctor_id)
-        .first()
-    )
+    doctor = db.query(Doctor).filter(Doctor.id == schedule_data.doctor_id).first()
 
     if not doctor:
         raise HTTPException(

@@ -118,11 +118,16 @@ async def transcribe_audio_endpoint(audio: UploadFile = File(...)):
     """
     audio_bytes = await audio.read()
     if not audio_bytes:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Аудио файл хоосон байна")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Аудио файл хоосон байна"
+        )
     mime = audio.content_type or "audio/webm"
     text = await transcribe_audio(audio_bytes, mime)
     if not text:
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Дуу таних боломжгүй байна")
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Дуу таних боломжгүй байна",
+        )
     return {"transcription": text}
 
 

@@ -8,17 +8,16 @@ from fastapi.middleware.cors import CORSMiddleware
 # Import models to register them in Base.metadata BEFORE create_all is called.
 # This is critical: if models are not imported, Alembic and create_all won't
 # know these tables exist.
-import app.models.consultation     # noqa: F401 — registers Consultation in Base.metadata
+import app.models.consultation  # noqa: F401 — registers Consultation in Base.metadata
 import app.models.daily_visit_plan  # noqa: F401 — registers DailyVisitPlan in Base.metadata
-import app.models.doctor      # noqa: F401 — registers Doctor in Base.metadata
-import app.models.hospital    # noqa: F401 — registers Hospital in Base.metadata
-import app.models.patient     # noqa: F401 — registers Patient in Base.metadata
-import app.models.schedule    # noqa: F401 — registers DoctorWeeklySchedule in Base.metadata
-
-from app.database import Base, engine
+import app.models.doctor  # noqa: F401 — registers Doctor in Base.metadata
+import app.models.hospital  # noqa: F401 — registers Hospital in Base.metadata
+import app.models.patient  # noqa: F401 — registers Patient in Base.metadata
+import app.models.schedule  # noqa: F401 — registers DoctorWeeklySchedule in Base.metadata
 from app.api.v1.router import api_router
 from app.core.config import settings
 from app.core.database import AsyncSessionLocal
+from app.database import Base, engine
 from app.services.notification_service import bulk_send_reminders
 from app.services.visit_service import send_day_before_confirmations
 from app.utils.logger import get_logger
@@ -113,18 +112,19 @@ app.add_middleware(
 # e.g. POST /api/v1/patients/  GET /api/v1/doctors/  POST /api/v1/agent/chat
 app.include_router(api_router, prefix="/api/v1")
 
+from app.routers import hospital_router
+from app.routers.doctor_weekly_schedules import \
+    router as legacy_schedule_router
+from app.routers.doctors import doctor_routers
 # ── Legacy routes (kept for backward compatibility during migration) ───────────
 # The frontend currently calls /patients/login and /patients/ directly.
 # Once the frontend is updated to use /api/v1/patients/, remove these.
 from app.routers.patients import router as legacy_patients_router
-from app.routers import hospital_router
-from app.routers.doctors import doctor_routers
-from app.routers.doctor_weekly_schedules import router as legacy_schedule_router
 
-app.include_router(legacy_patients_router)       # /patients/
-app.include_router(doctor_routers.router)        # /doctors/
-app.include_router(hospital_router.router)       # /hospitals/
-app.include_router(legacy_schedule_router)       # /schedules/
+app.include_router(legacy_patients_router)  # /patients/
+app.include_router(doctor_routers.router)  # /doctors/
+app.include_router(hospital_router.router)  # /hospitals/
+app.include_router(legacy_schedule_router)  # /schedules/
 
 
 @app.get("/health")
