@@ -1,13 +1,15 @@
-from typing import Optional, List
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
-from app.common_types.enums import GenderEnum, DoctorRoleEnum
 from datetime import datetime
+from typing import List, Optional
 from uuid import UUID
+
+from app.common_types.enums import DoctorRoleEnum, GenderEnum
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
+
 
 class DoctorBase(BaseModel):
     first_name: str = Field(..., min_length=2)
     last_name: str = Field(..., min_length=2)
-    gender: GenderEnum 
+    gender: GenderEnum
     phone: str = Field(..., min_length=8, max_length=15)
     email: EmailStr = Field(..., min_length=2)
     role: DoctorRoleEnum = DoctorRoleEnum.GENERAL
@@ -18,6 +20,7 @@ class DoctorBase(BaseModel):
 
 class DoctorCreate(DoctorBase):
     pass
+
 
 class DoctorUpdate(BaseModel):
     first_name: Optional[str] = None
@@ -31,10 +34,12 @@ class DoctorUpdate(BaseModel):
     is_available: Optional[bool] = None
     telegram_id: Optional[str] = None
     hospital_id: Optional[str] = None
-    
+
+
 class DoctorDeleteResponse(BaseModel):
     message: str
     success: bool
+
 
 class DoctorResponse(DoctorBase):
     id: UUID
@@ -45,16 +50,16 @@ class DoctorResponse(DoctorBase):
 
     model_config = ConfigDict(from_attributes=True)
 
+
 class DoctorUpdateResponse(BaseModel):
     message: str
     data: DoctorResponse
-    
+
     model_config = ConfigDict(from_attributes=True)
+
 
 class DoctorListResponse(BaseModel):
     items: List[DoctorResponse]
     total: int
     size: int
     page: int
-    
-    

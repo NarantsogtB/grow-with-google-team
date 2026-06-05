@@ -30,16 +30,27 @@ jobs:
             echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
             echo "ENV=${{ secrets.ENV }}" >> .env
             echo "GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }}" >> .env
+            echo "DATABASE=${{ secrets.DATABASE_URL }}" >> .env
+            echo "WHAT3WORDS_API_KEY=${{ secrets.WHAT3WORDS_API_KEY }}" >> .env
+            echo "TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}" >> .env
             source .venv/bin/activate
             pip install -r requirements.txt
             alembic upgrade head
-            pm2 restart health-api || pm2 start "uvicorn app.main:app --host 0.0.0.0 --port 8000" --name health-api --error ./logs/server.log --output ./logs/uvicorn.log
+            pm2 restart health-api || pm2 start "source .venv/bin/activate && uvicorn app.main:app --host 0.0.0.0 --port 8000" --name health-api --error ./logs/server.log --output ./logs/uvicorn.log
             pm2 save
             cd ..
 
-            # Client
-            cd client
+            # Admin
+            cd admin
             bun install
             bun run build
-            pm2 restart nextjs || pm2 start "bun run start" --name nextjs
+            pm2 restart admin || pm2 start "bun run start -- --port 3000" --name admin
+            pm2 save
+            cd ..
+
+            # Portal
+            cd portal
+            bun install
+            bun run build
+            pm2 restart portal || pm2 start "bun run start -- --port 3002" --name portal
             pm2 save

@@ -2,15 +2,15 @@ from datetime import time
 from typing import Optional
 from uuid import UUID
 
-from pydantic import BaseModel, Field, field_validator
-
 from app.common_types.enums import DayOfWeekEnum
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class DoctorWeeklyScheduleBase(BaseModel):
     """
     Эмчийн 7 хоног бүр давтагдах гэрийн эргэлтийн хуваарийн үндсэн schema.
     """
+
     doctor_id: UUID
     day_of_week: DayOfWeekEnum
     start_time: time
@@ -67,5 +67,5 @@ class DoctorWeeklyScheduleUpdate(BaseModel):
 class DoctorWeeklyScheduleResponse(DoctorWeeklyScheduleBase):
     id: UUID
 
-    class Config:
-        from_attributes = True
+    # Pydantic V2 style — replaces the deprecated `class Config`
+    model_config = ConfigDict(from_attributes=True)

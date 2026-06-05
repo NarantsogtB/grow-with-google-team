@@ -1,11 +1,8 @@
-import pytest
-from fastapi.testclient import TestClient
-from app.main import app
+from httpx import AsyncClient
 
-client = TestClient(app)
 
-def test_create_patient():
-    response = client.post(
+async def test_create_patient(client: AsyncClient):
+    response = await client.post(
         "/patients/",
         json={
             "full_name": "Test Patient",
@@ -17,9 +14,7 @@ def test_create_patient():
             "longitude": 106.917701,
         },
     )
-    # Шинээр үүссэн тул 201 байх ёстой
     assert response.status_code == 201
-    
     data = response.json()
     assert data["full_name"] == "Test Patient"
     assert data["phone_number"] == "99112235"
@@ -30,8 +25,9 @@ def test_create_patient():
     assert "id" in data
     assert "created_at" in data
 
-def test_get_patient_by_id():
-    create_response = client.post(
+
+async def test_get_patient_by_id(client: AsyncClient):
+    create_response = await client.post(
         "/patients/",
         json={
             "full_name": "Single Patient",
@@ -43,21 +39,17 @@ def test_get_patient_by_id():
             "longitude": 106.917700,
         },
     )
-    # Шинээр үүссэн тул 201
     assert create_response.status_code == 201
-    
-    created_patient = create_response.json()
-    patient_id = created_patient["id"]
-    
-    response = client.get(f"/patients/{patient_id}")
-    # Датаг зөвхөн уншиж (GET) байгаа тул 200 OK ирнэ!
+    patient_id = create_response.json()["id"]
+
+    response = await client.get(f"/patients/{patient_id}")
     assert response.status_code == 200
-    
     data = response.json()
     assert data["id"] == patient_id
     assert data["full_name"] == "Single Patient"
 
-def test_create_patient_duplicate_phone():
+
+async def test_create_patient_duplicate_phone(client: AsyncClient):
     payload = {
         "full_name": "Duplicate Patient",
         "phone_number": "99112237",
@@ -67,16 +59,14 @@ def test_create_patient_duplicate_phone():
         "latitude": 47.918873,
         "longitude": 106.917701,
     }
-    
-    first_response = client.post("/patients/", json=payload)
-    # Анхных нь амжилттай үүснэ
+    first_response = await client.post("/patients/", json=payload)
     assert first_response.status_code == 201
-    
-    second_response = client.post(
+
+    second_response = await client.post(
         "/patients/",
         json={
             "full_name": "Duplicate Patient 2",
-            "phone_number": "99112237",  # Ижил утас
+            "phone_number": "99112237",
             "password": "password123",
             "address_text": "Duplicate patient second address",
             "telegram_chat_id": "123459",
