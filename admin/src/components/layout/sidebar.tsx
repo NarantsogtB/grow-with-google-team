@@ -12,6 +12,7 @@ import {
   Plus,
   Route,
   Settings,
+  Sparkles,
   Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -30,6 +31,7 @@ const ROLE_LABELS: Record<string, string> = {
 
 export const NAV_ITEMS = [
   { label: "Хяналт", href: "/dashboard", icon: LayoutDashboard },
+  { label: "AI Туслах", href: "/dashboard/assistant", icon: Sparkles },
   { label: "Үзлэгийн түүх", href: "/dashboard/history", icon: ClipboardList },
   { label: "Оршин суугч", href: "/dashboard/patients", icon: Users },
   { label: "Хуваарь", href: "/dashboard/schedules", icon: CalendarDays },
