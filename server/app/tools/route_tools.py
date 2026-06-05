@@ -107,6 +107,45 @@ async def w3w_to_coords(w3w_address: str) -> Tuple[float, float]:
     return coords["lat"], coords["lng"]
 
 
+def calculate_shortest_route_by_coords(
+    coords: List[Tuple[float, float]],
+) -> List[int]:
+    """
+    Pure-math nearest-neighbor TSP on (lat, lng) pairs.
+
+    Args:
+        coords: list of (lat, lng) tuples. Index 0 = starting point.
+
+    Returns:
+        List of indices into `coords` in optimal visit order.
+        Always starts with 0. Length == len(coords).
+
+    Example:
+        coords = [(47.91, 106.90), (47.93, 106.89), (47.92, 106.92)]
+        calculate_shortest_route_by_coords(coords)
+        # → [0, 1, 2]  (or whichever order is shortest)
+    """
+    n = len(coords)
+    if n <= 1:
+        return list(range(n))
+
+    order = [0]
+    unvisited = set(range(1, n))
+    current = 0
+
+    while unvisited:
+        cur_lat, cur_lng = coords[current]
+        nearest = min(
+            unvisited,
+            key=lambda i: haversine_km(cur_lat, cur_lng, coords[i][0], coords[i][1]),
+        )
+        order.append(nearest)
+        unvisited.remove(nearest)
+        current = nearest
+
+    return order
+
+
 async def calculate_shortest_route_tool(w3w_locations: List[str]) -> List[str]:
     """
     Sort a list of What3Words addresses into the optimal visit order.

@@ -74,6 +74,7 @@ class AgentState(TypedDict):
     intent: str  # Classified intent: "schedule_update" | "route_optimize" | "soap_note" | "general"
     tool_result: Optional[Dict[str, Any]]  # Output from deterministic tools
     final_response: Optional[str]  # Final response to return to the doctor
+    doctor_id: Optional[str]  # Doctor UUID (string) — set by the chat endpoint for auth-bound nodes
 
 
 # ── NODE 1: INTENT CLASSIFIER ─────────────────────────────────────────────────
@@ -175,21 +176,63 @@ async def schedule_node(state: AgentState) -> AgentState:
 async def route_node(state: AgentState) -> AgentState:
     """
     Handle route optimization intent.
-    Extracts W3W addresses from schedule and calls calculate_shortest_route_tool.
-    Returns sorted route as a numbered list.
-    """
 
-    # In production, W3W addresses are fetched from today's patient schedule
-    # For demonstration, we return an instructional message
-    logger.info("Route node invoked — requires patient W3W addresses from DB")
-    return {
-        **state,
-        "final_response": (
-            "Маршрут тооцоолох үйлдлийг илрүүлэв. "
-            "Өнөөдрийн хуваарийн What3Words хаягуудыг датабаазаас авч "
-            "оновчтой дарааллаар зохион байгуулна."
-        ),
-    }
+    Pulls the doctor's assigned sector, fetches that sector's patients with
+    GPS coords, and runs lat/lng nearest-neighbor TSP. Returns a numbered
+    visit list with per-leg distances.
+    """
+    from app.core.database import AsyncSessionLocal
+    from app.repositories.doctor_repo import DoctorRepository
+    from app.tools.route_tools import calculate_shortest_route_by_coords, haversine_km
+
+    doctor_id = state.get("doctor_id")
+    if not doctor_id:
+        return {
+            **state,
+            "final_response": "Эмчийн нэвтрэлт шаардлагатай — login хийсний дараа дахин оролдоно уу.",
+        }
+
+    async with AsyncSessionLocal() as db:
+        doctor = await DoctorRepository(db).get_by_id(doctor_id)
+        if doctor is None or not doctor.assigned_sector:
+            return {
+                **state,
+                "final_response": "Таны хэсэг (sector) тохиргоо олдсонгүй.",
+            }
+
+        # Late import to avoid circular module load at startup
+        from app.repositories.patient_repo import PatientRepository
+
+        patients, _ = await PatientRepository(db).get_by_sector(
+            doctor.assigned_sector, page=1, size=100
+        )
+
+    geo_patients = [p for p in patients if p.latitude is not None and p.longitude is not None]
+    if not geo_patients:
+        return {
+            **state,
+            "final_response": (
+                f"{doctor.assigned_sector}-р хэсэгт GPS координаттай өвчтөн алга байна."
+            ),
+        }
+
+    coords = [(p.latitude, p.longitude) for p in geo_patients]
+    order = calculate_shortest_route_by_coords(coords)
+
+    lines = [f"📍 {doctor.assigned_sector}-р хэсгийн оновчтой эргэлт:"]
+    total_km = 0.0
+    for position, idx in enumerate(order):
+        p = geo_patients[idx]
+        if position == 0:
+            lines.append(f"1. {p.full_name} — эхлэх цэг")
+        else:
+            prev = geo_patients[order[position - 1]]
+            leg = haversine_km(prev.latitude, prev.longitude, p.latitude, p.longitude)
+            total_km += leg
+            lines.append(f"{position + 1}. {p.full_name} — {leg:.2f} км")
+
+    lines.append(f"\nНийт: {total_km:.2f} км · {len(geo_patients)} өвчтөн")
+    return {**state, "final_response": "\n".join(lines)}
 
 
 # ── NODE 2c: SOAP NOTE STRUCTURING ────────────────────────────────────────────
