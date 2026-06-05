@@ -1,10 +1,17 @@
-import uuid
+# DEPRECATED: This file is kept only for backward compatibility during the migration
+# to the enterprise folder structure. Do NOT add new models here.
+#
+# The canonical locations are:
+#   - Enums     → app/common_types/enums.py (and later → app/models/enums.py)
+#   - Patient   → app/models/patients/patient_models.py (UUID primary key)
+#   - Doctor    → app/models/doctors/doctor_models.py
+#   - Hospital  → app/models/hospitals/hospital_models.py
+#
+# The OLD Patient class below was removed because it conflicted with the new
+# Patient model (Integer PK vs UUID PK). Alembic was seeing two `patients`
+# tables with different schemas, which would cause schema drift on next migration.
+
 import enum
-
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, Enum
-from sqlalchemy.sql import func
-
-from app.database import Base
 
 
 class GenderEnum(str, enum.Enum):
@@ -24,36 +31,3 @@ class ActionTypeEnum(str, enum.Enum):
     REGULAR_CHECK = "REGULAR_CHECK"
     FOLLOW_UP = "FOLLOW_UP"
     EMERGENCY = "EMERGENCY"
-
-
-class Patient(Base):
-    __tablename__ = "patients"
-
-    id = Column(Integer, primary_key=True, index=True)
-    uuid = Column(String, unique=True, index=True, default=lambda: str(uuid.uuid4()), nullable=False)
-
-    name = Column(String, nullable=False)
-    phone = Column(String, nullable=False, unique=True, index=True)
-    telegram_id = Column(String, nullable=True)
-    address = Column(String, nullable=True)
-
-    age = Column(Integer, nullable=True)
-    gender = Column(Enum(GenderEnum), nullable=True)
-
-    medical_history = Column(String, nullable=True)
-    anamnesis = Column(String, nullable=True)
-    symptoms = Column(String, nullable=True)
-
-    is_active = Column(Boolean, default=True, nullable=False)
-    action_type = Column(Enum(ActionTypeEnum), nullable=True)
-
-    guardian_phone = Column(String, nullable=True)
-    patient_type = Column(Enum(PatientTypeEnum), default=PatientTypeEnum.REGULAR, nullable=False)
-
-    registration_number = Column(String, nullable=True, unique=True, index=True)
-    location_coordinates = Column(String, nullable=True)
-
-    risk_level = Column(String, default="low")
-
-    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-    last_visit_at = Column(DateTime(timezone=True), nullable=True)

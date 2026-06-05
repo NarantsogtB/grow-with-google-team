@@ -10,23 +10,6 @@ from app.models.doctor_weekly_schedules import (
 )
 
 
-def create_doctor_weekly_schedule(
-    db: Session,
-    schedule_data: DoctorWeeklyScheduleCreate,
-):
-    """
-    Эмчийн 7 хоног бүр давтагдах гэрийн эргэлтийн хуваарь үүсгэнэ.
-    """
-
-    new_schedule = DoctorWeeklySchedule(**schedule_data.model_dump())
-
-    db.add(new_schedule)
-    db.commit()
-    db.refresh(new_schedule)
-
-    return new_schedule
-
-
 def get_doctor_weekly_schedules(db: Session):
     """
     Бүх weekly schedule-ийн жагсаалтыг авна.

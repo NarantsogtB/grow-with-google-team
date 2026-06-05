@@ -7,11 +7,19 @@ from sqlalchemy import pool
 
 from alembic import context
 
-from app.database import Base
-from app import models
 from app.config import settings
-from app.models.doctors.doctor_models import Doctor
-from app.models.hospitals.hospital_models import Hospital
+# Import the single shared Base — this is the SAME object used by all models.
+# After the enterprise refactor, all models register themselves in Base.metadata
+# by being imported below. Alembic reads Base.metadata to auto-generate migrations.
+from app.models.base import Base
+
+# Import all model classes to register them in Base.metadata
+# Without these imports, Alembic won't know these tables exist and will try to
+# DROP them or fail to detect schema changes.
+import app.models.doctor    # noqa: F401 — registers Doctor
+import app.models.hospital  # noqa: F401 — registers Hospital
+import app.models.patient   # noqa: F401 — registers Patient
+import app.models.schedule  # noqa: F401 — registers DoctorWeeklySchedule
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 sys.path.insert(0, dirname(dirname(abspath(__file__))))
@@ -66,7 +74,8 @@ def run_migrations_online() -> None:
 
     """
     configuration = config.get_section(config.config_ini_section, {})
-    configuration['sqlalchemy.url'] = settings.DATABASE_URL
+    _alembic_url = settings.DATABASE_URL.replace("+asyncpg", "", 1)
+    configuration['sqlalchemy.url'] = _alembic_url
     
     connectable = engine_from_config(
         configuration,
