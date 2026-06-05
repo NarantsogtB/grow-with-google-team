@@ -79,6 +79,13 @@ class PatientRepository(BaseRepository[Patient]):
         )
         return list(rows)
 
+    async def get_by_ids(self, ids: List) -> List[Patient]:
+        """Bulk-fetch patients by a list of UUIDs (any order)."""
+        if not ids:
+            return []
+        rows = (await self.db.execute(select(Patient).where(Patient.id.in_(ids)))).scalars().all()
+        return list(rows)
+
     async def get_by_sector(self, sector: str, page: int, size: int) -> Tuple[List[Patient], int]:
         """Filter patients by geographic sector (matches doctor.assigned_sector)."""
         offset = (page - 1) * size
