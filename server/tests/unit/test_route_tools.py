@@ -27,7 +27,47 @@
 # =============================================================================
 
 import pytest
-from app.tools.route_tools import calculate_shortest_route_tool, haversine_km
+from app.tools.route_tools import (
+    calculate_shortest_route_by_coords,
+    calculate_shortest_route_tool,
+    haversine_km,
+)
+
+
+class TestCalculateShortestRouteByCoords:
+    """Pure-math TSP on lat/lng tuples — no mocking, no async."""
+
+    def test_empty(self):
+        assert calculate_shortest_route_by_coords([]) == []
+
+    def test_single_point(self):
+        assert calculate_shortest_route_by_coords([(47.9, 106.9)]) == [0]
+
+    def test_two_points_preserves_order(self):
+        # With two points, the only option after starting at 0 is to go to 1
+        result = calculate_shortest_route_by_coords([(47.9, 106.9), (47.91, 106.91)])
+        assert result == [0, 1]
+
+    def test_starts_at_index_zero(self):
+        # Even if a later point is closer to the centroid, index 0 must come first
+        coords = [(48.0, 107.0), (47.91, 106.91), (47.92, 106.92), (47.93, 106.93)]
+        result = calculate_shortest_route_by_coords(coords)
+        assert result[0] == 0
+        assert sorted(result) == [0, 1, 2, 3]
+
+    def test_nearest_neighbor_order(self):
+        # Start at A. B is closest to A, then C, then D.
+        # A=(47.9, 106.9), B=(47.91, 106.9), C=(47.93, 106.9), D=(48.0, 106.9)
+        coords = [(47.9, 106.9), (47.93, 106.9), (47.91, 106.9), (48.0, 106.9)]
+        # By position: 0=A, 1=C, 2=B, 3=D
+        # Expected order: 0 (A) → 2 (B, closest to A) → 1 (C) → 3 (D)
+        result = calculate_shortest_route_by_coords(coords)
+        assert result == [0, 2, 1, 3]
+
+    def test_all_returned_exactly_once(self):
+        coords = [(47.9 + i * 0.01, 106.9 + i * 0.01) for i in range(6)]
+        result = calculate_shortest_route_by_coords(coords)
+        assert sorted(result) == list(range(6))
 
 
 class TestHaversine:
