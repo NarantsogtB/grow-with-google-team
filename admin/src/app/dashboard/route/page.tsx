@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
+import Link from "next/link";
 import {
   MapPin,
   Phone,
@@ -358,12 +359,12 @@ export default function RoutePage() {
               {DAYS.find((d) => d.key === activeDay)?.label} өдөрт эргэлт
               байхгүй.
               <br />
-              <a
+              <Link
                 href="/dashboard/schedules"
                 className="text-blue-500 hover:underline"
               >
                 Хуваарь хуудсаас
-              </a>{" "}
+              </Link>{" "}
               нэмнэ үү.
             </p>
           </div>
