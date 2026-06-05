@@ -150,24 +150,151 @@ def route_by_intent(state: AgentState) -> str:
     return next_node
 
 
+PATIENT_NAME_EXTRACT_PROMPT = """You read a Mongolian family doctor's message about a patient who cannot
+attend their scheduled home visit. Extract the patient's name and the date
+they cannot attend.
+
+Respond with EXACTLY one line in this format (no extra text):
+NAME=<patient full name as written or "?"> | DATE=<today | tomorrow | YYYY-MM-DD>
+
+Examples:
+  "Дорж Мөнхбаяр маргааш ирж чадахгүй гэлээ" → NAME=Дорж Мөнхбаяр | DATE=tomorrow
+  "Цэнд Оюунцэцэг өнөөдөр ажилтай" → NAME=Цэнд Оюунцэцэг | DATE=today
+  "2026-06-10-нд Болд ирэхгүй" → NAME=Болд | DATE=2026-06-10
+  "өвчтөн цуцлах хэрэгтэй" → NAME=? | DATE=today"""
+
+
+def _parse_extracted_patient(raw: str) -> tuple[str, str]:
+    """Parse NAME=... | DATE=... line from the Gemini extractor."""
+    name = "?"
+    date_str = "today"
+    for part in raw.replace("\n", " ").split("|"):
+        part = part.strip()
+        if part.upper().startswith("NAME="):
+            name = part[5:].strip()
+        elif part.upper().startswith("DATE="):
+            date_str = part[5:].strip().lower()
+    return name, date_str
+
+
+def _resolve_date(date_str: str):
+    """Convert 'today' / 'tomorrow' / 'YYYY-MM-DD' to a date object (Ulaanbaatar TZ)."""
+    from datetime import date, datetime, timedelta, timezone
+
+    ub = timezone(timedelta(hours=8))
+    today = datetime.now(ub).date()
+    s = (date_str or "today").strip().lower()
+    if s == "today":
+        return today
+    if s == "tomorrow":
+        return today + timedelta(days=1)
+    try:
+        return date.fromisoformat(s)
+    except ValueError:
+        return today
+
+
 # ── NODE 2a: SCHEDULE UPDATE ──────────────────────────────────────────────────
 async def schedule_node(state: AgentState) -> AgentState:
     """
-    Handle schedule update intent.
-    In production: extract patient ID from message, call reorder_schedule_tool.
-    Returns a confirmation message for the doctor.
-    """
-    # The schedule_agent module handles the full flow
+    Handle "patient can't come" intent.
 
-    # NOTE: In production, the db session is passed via the FastAPI endpoint
-    # that invokes this graph. For now, we return an instructional message.
-    logger.info("Schedule node invoked — requires DB session from endpoint")
+    Extracts the patient name + date via Gemini, finds the matching pending
+    visit plan for that doctor, marks it `declined`, and returns confirmation.
+    """
+    from app.core.database import AsyncSessionLocal
+    from app.models.patient import Patient
+    from app.repositories.daily_visit_plan_repo import DailyVisitPlanRepository
+    from app.repositories.doctor_repo import DoctorRepository
+    from sqlalchemy import select
+
+    doctor_id = state.get("doctor_id")
+    if not doctor_id:
+        return {**state, "final_response": "Эмчийн нэвтрэлт шаардлагатай."}
+
+    user_text = ""
+    if state.get("messages"):
+        last = state["messages"][-1]
+        user_text = last.get("content", "") if isinstance(last, dict) else str(last)
+
+    extract = _client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=user_text,
+        config=types.GenerateContentConfig(
+            system_instruction=PATIENT_NAME_EXTRACT_PROMPT,
+            temperature=0,
+            max_output_tokens=80,
+        ),
+    )
+    name, date_str = _parse_extracted_patient(extract.text or "")
+    target_date = _resolve_date(date_str)
+
+    if name == "?" or not name:
+        return {
+            **state,
+            "final_response": (
+                "Аль өвчтөн ирж чадахгүй болсныг тодорхой бичнэ үү. "
+                "Жишээ нь: 'Дорж Мөнхбаяр маргааш ирж чадахгүй'"
+            ),
+        }
+
+    async with AsyncSessionLocal() as db:
+        doctor = await DoctorRepository(db).get_by_id(doctor_id)
+        if doctor is None or not doctor.assigned_sector:
+            return {**state, "final_response": "Эмчийн хэсэг тохиргоо олдсонгүй."}
+
+        # Find patient by name (ILIKE substring) within the doctor's sector
+        like = f"%{name}%"
+        rows = (
+            (
+                await db.execute(
+                    select(Patient).where(
+                        Patient.sector == doctor.assigned_sector,
+                        Patient.full_name.ilike(like),
+                    )
+                )
+            )
+            .scalars()
+            .all()
+        )
+
+        if not rows:
+            return {
+                **state,
+                "final_response": (
+                    f"'{name}' нэртэй өвчтөн таны {doctor.assigned_sector}-р хэсэгт "
+                    "олдсонгүй. Нэрийг шалгана уу."
+                ),
+            }
+        if len(rows) > 1:
+            choices = ", ".join(p.full_name for p in rows[:5])
+            return {
+                **state,
+                "final_response": (
+                    f"'{name}' нэртэй {len(rows)} өвчтөн олдлоо: {choices}. "
+                    "Бүтэн нэрээр нь бичнэ үү."
+                ),
+            }
+
+        patient = rows[0]
+        repo = DailyVisitPlanRepository(db)
+        plan = await repo.get_pending_for_patient(str(patient.id), target_date)
+        if not plan:
+            return {
+                **state,
+                "final_response": (
+                    f"{patient.full_name}-д {target_date.isoformat()}-нд "
+                    "товлогдсон зорчилт олдсонгүй."
+                ),
+            }
+        await repo.update_status(plan.id, "declined")
+        await db.commit()
+
     return {
         **state,
         "final_response": (
-            "Хуваарь шинэчлэх үйлдлийг илрүүлэв. "
-            "Оршин суугчийн ID болон хуваарийн ID шаардлагатай. "
-            "Системийн интеграцийг дуусгасны дараа автоматаар шинэчлэгдэнэ."
+            f"✅ {patient.full_name}-ийн {target_date.isoformat()}-ны зорчилтыг "
+            "цуцалсан болгож тэмдэглэв."
         ),
     }
 
