@@ -47,6 +47,9 @@ jobs:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/family_medical_test_db
       JWT_SECRET: test-secret
       ENV: test
+      GOOGLE_API_KEY: fake-gemini-key-mocked-in-tests
+      WHAT3WORDS_API_KEY: fake-w3w-key-mocked-in-tests
+      TELEGRAM_BOT_TOKEN: ""
 
     defaults:
       run:
