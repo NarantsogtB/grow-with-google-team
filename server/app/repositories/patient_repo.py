@@ -7,11 +7,10 @@
 
 from typing import List, Optional, Tuple
 
-from sqlalchemy import and_, func, or_, select
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.models.patient import Patient
 from app.repositories.base import BaseRepository
+from sqlalchemy import and_, func, or_, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class PatientRepository(BaseRepository[Patient]):
