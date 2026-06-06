@@ -9,7 +9,7 @@ from typing import List, Optional, Tuple
 
 from app.models.patient import Patient
 from app.repositories.base import BaseRepository
-from sqlalchemy import func, or_, select
+from sqlalchemy import and_, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -85,6 +85,24 @@ class PatientRepository(BaseRepository[Patient]):
             return []
         rows = (await self.db.execute(select(Patient).where(Patient.id.in_(ids)))).scalars().all()
         return list(rows)
+
+    async def search_in_sector(self, q: str, sector: str, page: int, size: int) -> Tuple[List[Patient], int]:
+        """Search patients by name or phone within a specific sector."""
+        pattern = f"%{q}%"
+        offset = (page - 1) * size
+        where = and_(
+            Patient.sector == sector,
+            or_(Patient.full_name.ilike(pattern), Patient.phone_number.ilike(pattern)),
+        )
+        total = (
+            await self.db.execute(select(func.count()).select_from(Patient).where(where))
+        ).scalar()
+        rows = (
+            (await self.db.execute(select(Patient).where(where).offset(offset).limit(size)))
+            .scalars()
+            .all()
+        )
+        return list(rows), total
 
     async def get_by_sector(self, sector: str, page: int, size: int) -> Tuple[List[Patient], int]:
         """Filter patients by geographic sector (matches doctor.assigned_sector)."""
