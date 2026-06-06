@@ -6,7 +6,15 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
-import { Loader2, Building2, ChevronDown } from "lucide-react";
+import {
+  Loader2,
+  Building2,
+  ChevronDown,
+  MapPin,
+  CheckCircle2,
+  AlertTriangle,
+  RefreshCw,
+} from "lucide-react";
 import { api, ApiError } from "@/lib/api-client";
 import { registerSchema, type RegisterFormValues } from "@/schemas/auth";
 import { useAuth } from "@/contexts/auth-context";
@@ -23,11 +31,15 @@ const LEVEL_LABEL: Record<string, string> = {
   TERTIARY: "Хотын эмнэлэг",
 };
 
+type GeoStatus = "idle" | "loading" | "granted" | "denied" | "unavailable";
+
 export default function RegisterPage() {
   const router = useRouter();
   const { login } = useAuth();
   const [hospitals, setHospitals] = useState<HospitalResponse[]>([]);
   const [hospitalsLoading, setHospitalsLoading] = useState(true);
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [geoStatus, setGeoStatus] = useState<GeoStatus>("idle");
 
   const {
     register,
@@ -40,6 +52,26 @@ export default function RegisterPage() {
   });
 
   const selectedHospitalId = watch("hospital_id");
+
+  const requestLocation = () => {
+    if (typeof navigator === "undefined" || !navigator.geolocation) {
+      setGeoStatus("unavailable");
+      return;
+    }
+    setGeoStatus("loading");
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        setGeoStatus("granted");
+      },
+      () => setGeoStatus("denied"),
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 },
+    );
+  };
+
+  useEffect(() => {
+    requestLocation();
+  }, []);
 
   useEffect(() => {
     api
@@ -69,13 +101,15 @@ export default function RegisterPage() {
         (h) => h.id === values.hospital_id,
       );
 
-      // Register patient
+      // Register patient (include captured GPS coordinates if granted)
       await api.post("/api/v1/patients/", {
         full_name: values.full_name,
         phone_number: values.phone_number,
         password: values.password,
         address_text: values.address_text,
         sector,
+        latitude: coords?.lat ?? null,
+        longitude: coords?.lng ?? null,
       });
 
       // Auto-login after registration
@@ -188,6 +222,13 @@ export default function RegisterPage() {
               )}
             </div>
 
+            {/* Geolocation status — required for route optimization */}
+            <GeoStatusPanel
+              status={geoStatus}
+              coords={coords}
+              onRetry={requestLocation}
+            />
+
             {/* Hospital */}
             <div>
               <label className="block text-[13px] font-medium text-slate-700 mb-1.5">
@@ -296,6 +337,80 @@ export default function RegisterPage() {
         <p className="text-center text-[12px] text-slate-400 mt-5">
           FamilyDoc · Улаанбаатар, MN
         </p>
+      </div>
+    </div>
+  );
+}
+
+function GeoStatusPanel({
+  status,
+  coords,
+  onRetry,
+}: {
+  status: GeoStatus;
+  coords: { lat: number; lng: number } | null;
+  onRetry: () => void;
+}) {
+  if (status === "granted" && coords) {
+    return (
+      <div className="rounded-lg bg-emerald-50 border border-emerald-200 p-3 text-[12px] text-emerald-700 flex items-start gap-2.5">
+        <CheckCircle2 className="w-4 h-4 mt-0.5 shrink-0" />
+        <div className="flex-1 min-w-0">
+          <p className="font-medium">Гэрийн байршил баталгаажсан</p>
+          <p className="text-emerald-600 font-mono text-[11px] mt-0.5">
+            {coords.lat.toFixed(5)}, {coords.lng.toFixed(5)}
+          </p>
+          <p className="text-emerald-600/70 mt-1">
+            Эмчийн гэрийн зорчилтын маршрутад автоматаар орох болно.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={onRetry}
+          className="shrink-0 text-emerald-700 hover:text-emerald-900 p-1"
+          aria-label="Шинэчлэх"
+          title="Дахин тогтоох"
+        >
+          <RefreshCw className="w-3.5 h-3.5" />
+        </button>
+      </div>
+    );
+  }
+
+  if (status === "loading") {
+    return (
+      <div className="rounded-lg bg-blue-50 border border-blue-200 p-3 text-[12px] text-blue-700 flex items-center gap-2.5">
+        <Loader2 className="w-4 h-4 animate-spin shrink-0" />
+        <p>Гэрийн байршлыг тогтоож байна...</p>
+      </div>
+    );
+  }
+
+  // denied / unavailable / idle
+  const isUnsupported = status === "unavailable";
+  return (
+    <div className="rounded-lg bg-amber-50 border border-amber-200 p-3 text-[12px] text-amber-700 flex items-start gap-2.5">
+      <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
+      <div className="flex-1 min-w-0">
+        <p className="font-medium">
+          {isUnsupported
+            ? "Браузер геолокаци дэмжихгүй байна"
+            : "Байршлын зөвшөөрөл өгөөгүй байна"}
+        </p>
+        <p className="text-amber-600/80 mt-0.5">
+          {isUnsupported
+            ? "Өөр браузер ашиглах эсвэл админд хандана уу."
+            : "Эмчийн маршрутад орохын тулд байршил баталгаажуулах шаардлагатай. Браузерт зөвшөөрөл олгоод дахин оролдоно уу."}
+        </p>
+        <button
+          type="button"
+          onClick={onRetry}
+          disabled={isUnsupported}
+          className="mt-2 inline-flex items-center gap-1.5 text-[12px] font-medium text-amber-800 hover:text-amber-900 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <MapPin className="w-3.5 h-3.5" />
+          Байршил дахин тогтоох
+        </button>
       </div>
     </div>
   );
