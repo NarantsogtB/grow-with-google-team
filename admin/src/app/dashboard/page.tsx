@@ -22,7 +22,7 @@ import type { VisitPlanResponse } from "@/types";
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function todayISODate(): string {
-  return new Date().toISOString().split("T")[0];
+  return new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Ulaanbaatar" });
 }
 
 function fullRouteLink(plans: VisitPlanResponse[]): string | null {

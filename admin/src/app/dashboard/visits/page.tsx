@@ -15,7 +15,7 @@ import type { PatientResponse, PaginatedResponse, VisitPlanResponse, VisitPlanCr
 function tomorrow(): string {
   const d = new Date();
   d.setDate(d.getDate() + 1);
-  return d.toISOString().split("T")[0];
+  return d.toLocaleDateString("en-CA", { timeZone: "Asia/Ulaanbaatar" });
 }
 
 const STATUS_BADGE: Record<string, { label: string; cls: string }> = {
