@@ -20,14 +20,16 @@
 #           └── (yields session from AsyncSessionLocal)
 # =============================================================================
 
+import uuid
 from typing import Annotated
 
-from app.core.database import get_db  # async get_db from new core module
-from app.core.security import decode_access_token
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.core.database import get_db  # async get_db from new core module
+from app.core.security import decode_access_token
 
 # HTTPBearer reads the "Authorization: Bearer <token>" header automatically.
 # If the header is missing or malformed, FastAPI returns 403 before our code runs.
@@ -60,8 +62,8 @@ async def get_current_patient(
     """
     # Decode the JWT — raises JWTError if invalid or expired
     try:
-        patient_id = decode_access_token(credentials.credentials)
-    except JWTError:
+        patient_id = uuid.UUID(decode_access_token(credentials.credentials))
+    except (JWTError, ValueError):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Токен хүчингүй эсвэл хугацаа дууссан байна",
@@ -100,8 +102,8 @@ async def get_current_doctor(
 ):
     """Auth dependency for doctor-authenticated endpoints (admin panel)."""
     try:
-        doctor_id = decode_access_token(credentials.credentials)
-    except JWTError:
+        doctor_id = uuid.UUID(decode_access_token(credentials.credentials))
+    except (JWTError, ValueError):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Токен хүчингүй эсвэл хугацаа дууссан байна",
