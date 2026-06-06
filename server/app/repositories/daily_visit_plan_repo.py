@@ -31,6 +31,27 @@ class DailyVisitPlanRepository(BaseRepository[DailyVisitPlan]):
         )
         return result.scalar_one_or_none()
 
+    async def get_earliest_pending_for_patient(
+        self, patient_id: str, from_date: DateType
+    ) -> Optional[DailyVisitPlan]:
+        """Patient's next pending visit on or after `from_date`.
+
+        Used when a patient replies to a Telegram confirmation: we don't
+        know which specific date the confirmation referred to (admin can
+        send confirmations for any future date), so we take the nearest
+        upcoming pending visit.
+        """
+        result = await self.db.execute(
+            select(DailyVisitPlan)
+            .where(
+                DailyVisitPlan.patient_id == patient_id,
+                DailyVisitPlan.date >= from_date,
+                DailyVisitPlan.status == "pending",
+            )
+            .order_by(DailyVisitPlan.date, DailyVisitPlan.visit_order)
+        )
+        return result.scalars().first()
+
     async def get_active_by_date_doctor(
         self, date: DateType, doctor_id: str
     ) -> List[DailyVisitPlan]:
