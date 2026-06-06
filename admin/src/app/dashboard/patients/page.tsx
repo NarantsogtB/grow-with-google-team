@@ -1,10 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Users, MapPin, Phone, Calendar, Send, CheckCircle } from "lucide-react";
+import { Users, MapPin, Phone, Calendar, Send, CheckCircle, Link, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/api-client";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import type { PatientResponse, PaginatedResponse } from "@/types";
 
 export default function PatientsPage() {
@@ -15,6 +22,9 @@ export default function PatientsPage() {
   const [sendingId, setSendingId] = useState<string | null>(null);
   const [sentIds, setSentIds] = useState<Set<string>>(new Set());
   const [bulkSending, setBulkSending] = useState(false);
+  const [linkPatient, setLinkPatient] = useState<PatientResponse | null>(null);
+  const [chatIdInput, setChatIdInput] = useState("");
+  const [linking, setLinking] = useState(false);
   const PAGE_SIZE = 10;
 
   const fetchPatients = async (p: number) => {
@@ -56,13 +66,42 @@ export default function PatientsPage() {
         "/api/v1/notifications/send-bulk-reminder",
         {},
       );
-      toast.success(
-        `${res.sent} өвчтөнд мэдэгдэл илгээлээ${res.failed ? ` (${res.failed} алдаатай)` : ""}`,
-      );
+      if (res.total === 0) {
+        toast.info(
+          "Telegram холбогдсон өвчтөн байхгүй байна. Өвчтөн bot-д /link дугаар команд явуулах ёстой.",
+        );
+      } else {
+        toast.success(
+          `${res.sent} өвчтөнд мэдэгдэл илгээлээ${res.failed ? ` (${res.failed} алдаатай)` : ""}`,
+        );
+      }
     } catch {
       toast.error("Багц илгээхэд алдаа гарлаа");
     } finally {
       setBulkSending(false);
+    }
+  };
+
+  const openLinkDialog = (p: PatientResponse) => {
+    setLinkPatient(p);
+    setChatIdInput(p.telegram_chat_id ?? "");
+  };
+
+  const handleLinkSave = async () => {
+    if (!linkPatient) return;
+    setLinking(true);
+    try {
+      const updated = await api.put<PatientResponse>(
+        `/api/v1/patients/${linkPatient.id}`,
+        { telegram_chat_id: chatIdInput.trim() || null },
+      );
+      setPatients((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
+      setLinkPatient(null);
+      toast.success("Telegram мэдээлэл хадгалагдлаа");
+    } catch {
+      toast.error("Хадгалахад алдаа гарлаа");
+    } finally {
+      setLinking(false);
     }
   };
 
@@ -165,10 +204,16 @@ export default function PatientsPage() {
 
       {!loading && patients.length === 0 && (
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-          <div className="flex flex-col items-center justify-center py-16 text-slate-400">
+          <div className="flex flex-col items-center justify-center py-16 text-slate-400 px-6 text-center">
             <Users className="w-10 h-10 mb-3 opacity-40" />
-            <p className="text-sm font-medium">Өвчтөн байхгүй байна</p>
-            <p className="text-xs mt-1">Сервер эхлүүлэх шаардлагатай</p>
+            <p className="text-sm font-medium text-slate-600">
+              Танай хэсэгт бүртгэлтэй өвчтөн алга байна
+            </p>
+            <p className="text-xs mt-2 text-slate-500 max-w-sm">
+              Өвчтнүүд patient portal-аар (
+              <code className="bg-slate-100 px-1.5 py-0.5 rounded text-slate-700">/register</code>
+              ) өөрсдөө бүртгүүлэх, эсвэл super-admin самбараас гараар нэмэх боломжтой.
+            </p>
           </div>
         </div>
       )}
@@ -200,22 +245,35 @@ export default function PatientsPage() {
                 </div>
                 <div className="flex items-center justify-between pt-1 border-t border-slate-100">
                   {p.telegram_chat_id ? (
-                    <button
-                      onClick={() => handleSendReminder(p.id)}
-                      disabled={sendingId === p.id || sentIds.has(p.id)}
-                      className="flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-full border border-blue-200 text-blue-600 hover:bg-blue-50 disabled:opacity-50 transition-colors"
-                    >
-                      {sentIds.has(p.id) ? (
-                        <CheckCircle className="w-3 h-3" />
-                      ) : (
-                        <Send className="w-3 h-3" />
-                      )}
-                      {sentIds.has(p.id) ? "Илгээсэн" : sendingId === p.id ? "..." : "Сануулга"}
-                    </button>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        onClick={() => handleSendReminder(p.id)}
+                        disabled={sendingId === p.id || sentIds.has(p.id)}
+                        className="flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-full border border-blue-200 text-blue-600 hover:bg-blue-50 disabled:opacity-50 transition-colors"
+                      >
+                        {sentIds.has(p.id) ? (
+                          <CheckCircle className="w-3 h-3" />
+                        ) : (
+                          <Send className="w-3 h-3" />
+                        )}
+                        {sentIds.has(p.id) ? "Илгээсэн" : sendingId === p.id ? "..." : "Сануулга"}
+                      </button>
+                      <button
+                        onClick={() => openLinkDialog(p)}
+                        className="p-1 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+                        title="Telegram ID засах"
+                      >
+                        <Pencil className="w-3 h-3" />
+                      </button>
+                    </div>
                   ) : (
-                    <span className="text-slate-300 text-[11px]">
-                      Telegram байхгүй
-                    </span>
+                    <button
+                      onClick={() => openLinkDialog(p)}
+                      className="flex items-center gap-1 text-[11px] text-blue-500 hover:text-blue-700 transition-colors"
+                    >
+                      <Link className="w-3 h-3" />
+                      Telegram холбох
+                    </button>
                   )}
                   <div className="flex items-center gap-1 text-[11px] text-slate-400">
                     <Calendar className="w-3 h-3" />
@@ -274,20 +332,35 @@ export default function PatientsPage() {
                       </td>
                       <td className="px-4 py-3">
                         {p.telegram_chat_id ? (
-                          <button
-                            onClick={() => handleSendReminder(p.id)}
-                            disabled={sendingId === p.id || sentIds.has(p.id)}
-                            className="flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-full border border-blue-200 text-blue-600 hover:bg-blue-50 disabled:opacity-50 transition-colors"
-                          >
-                            {sentIds.has(p.id) ? (
-                              <CheckCircle className="w-3 h-3" />
-                            ) : (
-                              <Send className="w-3 h-3" />
-                            )}
-                            {sentIds.has(p.id) ? "Илгээсэн" : sendingId === p.id ? "..." : "Сануулга"}
-                          </button>
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              onClick={() => handleSendReminder(p.id)}
+                              disabled={sendingId === p.id || sentIds.has(p.id)}
+                              className="flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-full border border-blue-200 text-blue-600 hover:bg-blue-50 disabled:opacity-50 transition-colors"
+                            >
+                              {sentIds.has(p.id) ? (
+                                <CheckCircle className="w-3 h-3" />
+                              ) : (
+                                <Send className="w-3 h-3" />
+                              )}
+                              {sentIds.has(p.id) ? "Илгээсэн" : sendingId === p.id ? "..." : "Сануулга"}
+                            </button>
+                            <button
+                              onClick={() => openLinkDialog(p)}
+                              className="p-1 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+                              title="Telegram ID засах"
+                            >
+                              <Pencil className="w-3 h-3" />
+                            </button>
+                          </div>
                         ) : (
-                          <span className="text-slate-400 text-[12px]">—</span>
+                          <button
+                            onClick={() => openLinkDialog(p)}
+                            className="flex items-center gap-1 text-[11px] text-blue-500 hover:text-blue-700 transition-colors"
+                          >
+                            <Link className="w-3 h-3" />
+                            Холбох
+                          </button>
                         )}
                       </td>
                       <td className="px-4 py-3 text-slate-500 text-[12px]">
@@ -302,6 +375,55 @@ export default function PatientsPage() {
           </div>
         </>
       )}
+
+      {/* ── Link Telegram dialog ── */}
+      <Dialog open={!!linkPatient} onOpenChange={(open) => !open && setLinkPatient(null)}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Telegram холбох</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 mt-1">
+            <p className="text-[13px] text-slate-600">
+              <span className="font-medium">{linkPatient?.full_name}</span>-ын Telegram Chat ID оруулна уу.
+            </p>
+            <div className="bg-slate-50 rounded-lg p-3 text-[12px] text-slate-600 space-y-1">
+              <p className="font-medium text-slate-700">Chat ID олох арга:</p>
+              <p>1. Өвчтөн <span className="font-mono bg-white px-1 rounded border border-slate-200">@userinfobot</span>-д мессеж явуулна</p>
+              <p>2. Bot буцааж явуулсан <span className="font-mono">Id:</span> тоог хуулна</p>
+              <p className="text-slate-400">Эсвэл өвчтөн bot-д <span className="font-mono bg-white px-1 rounded border border-slate-200">/link {linkPatient?.phone_number}</span> явуулснаар автоматаар холбогдоно</p>
+            </div>
+            <div>
+              <label className="block text-[12px] font-medium text-slate-700 mb-1.5">
+                Telegram Chat ID (тоо)
+              </label>
+              <input
+                type="text"
+                value={chatIdInput}
+                onChange={(e) => setChatIdInput(e.target.value)}
+                placeholder="Жишээ: 123456789"
+                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+              />
+            </div>
+          </div>
+          <DialogFooter className="mt-2">
+            <button
+              type="button"
+              onClick={() => setLinkPatient(null)}
+              className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-800 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
+            >
+              Цуцлах
+            </button>
+            <button
+              onClick={handleLinkSave}
+              disabled={linking}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-60 rounded-lg transition-colors"
+            >
+              {linking && <div className="w-3.5 h-3.5 rounded-full border-2 border-white border-t-transparent animate-spin" />}
+              {linking ? "Хадгалж байна..." : "Хадгалах"}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

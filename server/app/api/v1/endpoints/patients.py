@@ -86,6 +86,18 @@ async def list_patients(
     return PaginatedResponse(items=items, total=total, page=page, size=size)
 
 
+@router.put("/{patient_id}", response_model=PatientResponse)
+async def update_patient(patient_id: UUID, data: PatientUpdate, db: Database):
+    """Update a patient's data (for doctor/admin use, e.g. linking telegram_chat_id)."""
+    from app.repositories.patient_repo import PatientRepository
+
+    repo = PatientRepository(db)
+    patient = await repo.get_by_id(patient_id)
+    if not patient:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Өвчтөн олдсонгүй")
+    return await repo.update(patient, data.model_dump(exclude_none=True))
+
+
 @router.get("/{patient_id}", response_model=PatientResponse)
 async def get_patient(patient_id: UUID, db: Database):
     """Fetch a single patient by their UUID."""
