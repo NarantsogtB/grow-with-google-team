@@ -19,6 +19,22 @@ class DailyVisitPlanRepository(BaseRepository[DailyVisitPlan]):
         )
         return list(result.scalars().all())
 
+    async def get_by_date_and_doctor(self, date: DateType, doctor_id) -> List[DailyVisitPlan]:
+        """Plans for a specific doctor on a specific date, sorted by visit_order.
+
+        Used by the dashboard / visits page so each doctor only sees their own
+        scheduled patients.
+        """
+        result = await self.db.execute(
+            select(DailyVisitPlan)
+            .where(
+                DailyVisitPlan.date == date,
+                DailyVisitPlan.doctor_id == doctor_id,
+            )
+            .order_by(DailyVisitPlan.visit_order)
+        )
+        return list(result.scalars().all())
+
     async def get_pending_for_patient(
         self, patient_id: str, date: DateType
     ) -> Optional[DailyVisitPlan]:
