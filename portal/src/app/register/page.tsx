@@ -226,8 +226,11 @@ export default function RegisterPage() {
             {/* Telegram (optional — bot-link flow) */}
             <div className="rounded-lg bg-blue-50 border border-blue-100 p-3 text-[12px] text-blue-700 space-y-1">
               <p className="font-medium">Telegram мэдэгдэл идэвхжүүлэх (заавал биш)</p>
-              <p>Бүртгэлийн дараа манай bot-д утасны дугаараа явуулна уу:</p>
-              <code className="block bg-white rounded px-2 py-1 text-blue-800 font-mono">
+              <p>Бүртгэлийн дараа{" "}
+                <a href="https://t.me/familydoc_reminder_bot" target="_blank" rel="noreferrer" className="font-medium underline">@familydoc_reminder_bot</a>
+                -д утасны дугаараа явуулна уу:</p>
+              <code className="block bg-whi
+              te rounded px-2 py-1 text-blue-800 font-mono">
                 /link &lt;утасны дугаар&gt;
               </code>
               <p className="text-blue-500">Жишээ: /link 99112233</p>

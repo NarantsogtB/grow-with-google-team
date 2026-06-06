@@ -68,7 +68,7 @@ export default function PatientsPage() {
       );
       if (res.total === 0) {
         toast.info(
-          "Telegram холбогдсон өвчтөн байхгүй байна. Өвчтөн bot-д /link дугаар команд явуулах ёстой.",
+          "Telegram холбогдсон өвчтөн байхгүй байна. Өвчтөн @familydoc_reminder_bot-д /link дугаар команд явуулах ёстой.",
         );
       } else {
         toast.success(
@@ -390,7 +390,9 @@ export default function PatientsPage() {
               <p className="font-medium text-slate-700">Chat ID олох арга:</p>
               <p>1. Өвчтөн <span className="font-mono bg-white px-1 rounded border border-slate-200">@userinfobot</span>-д мессеж явуулна</p>
               <p>2. Bot буцааж явуулсан <span className="font-mono">Id:</span> тоог хуулна</p>
-              <p className="text-slate-400">Эсвэл өвчтөн bot-д <span className="font-mono bg-white px-1 rounded border border-slate-200">/link {linkPatient?.phone_number}</span> явуулснаар автоматаар холбогдоно</p>
+              <p className="text-slate-400">Эсвэл өвчтөн{" "}
+                <a href="https://t.me/familydoc_reminder_bot" target="_blank" rel="noreferrer" className="text-blue-500 underline">@familydoc_reminder_bot</a>
+                -д <span className="font-mono bg-white px-1 rounded border border-slate-200">/link {linkPatient?.phone_number}</span> явуулснаар автоматаар холбогдоно</p>
             </div>
             <div>
               <label className="block text-[12px] font-medium text-slate-700 mb-1.5">
