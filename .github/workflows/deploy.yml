@@ -37,7 +37,7 @@ jobs:
             source .venv/bin/activate
             pip install -r requirements.txt
             alembic upgrade head
-            pm2 restart health-api || pm2 start "source .venv/bin/activate && uvicorn app.main:app --host 0.0.0.0 --port 8000" --name health-api --error ./logs/server.log --output ./logs/uvicorn.log
+            pm2 restart familydoc-backend || pm2 start "source .venv/bin/activate && uvicorn app.main:app --host 0.0.0.0 --port 8000" --name familydoc-backend --error ./logs/server.log --output ./logs/uvicorn.log
             pm2 save
             cd ..
 
