@@ -17,6 +17,7 @@ import {
 import { toast } from "sonner";
 import { api } from "@/lib/api-client";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ScheduledReminderCard } from "@/components/dashboard/scheduled-reminder";
 import type { VisitPlanResponse } from "@/types";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -352,6 +353,9 @@ export default function DashboardPage() {
           icon={<Users className="w-4 h-4 text-violet-400" />}
         />
       </div>
+
+      {/* Scheduled reminders — demo-friendly one-shot scheduler */}
+      <ScheduledReminderCard />
     </div>
   );
 }
