@@ -206,7 +206,9 @@ export default function DashboardPage() {
                           <p className="text-[14px] text-emerald-600 font-medium">✅ Холбогдсон</p>
                         ) : (
                           <div className="text-[12px] text-slate-500 space-y-0.5">
-                            <p>Холбогдоогүй. Bot-д дараах командыг явуулна уу:</p>
+                            <p>Холбогдоогүй.{" "}
+                              <a href="https://t.me/familydoc_reminder_bot" target="_blank" rel="noreferrer" className="underline">@familydoc_reminder_bot</a>
+                              -д дараах командыг явуулна уу:</p>
                             <code className="block bg-slate-100 rounded px-2 py-0.5 text-slate-700 font-mono text-[11px]">
                               /link {profile?.phone_number ?? "<утасны дугаар>"}
                             </code>
