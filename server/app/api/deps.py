@@ -76,9 +76,14 @@ async def get_current_patient(
     patient = await PatientRepository(db).get_by_id(patient_id)
 
     if not patient:
+        # Token decoded but the subject no longer exists in the DB (e.g. the
+        # patient was deleted, or the DB was re-seeded). Treat this as an
+        # auth failure (401) — NOT a 404 — so the frontend's 401 interceptor
+        # can clear the stale token and bounce the user back to /login.
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Хэрэглэгч олдсонгүй",
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Хэрэглэгч олдсонгүй — дахин нэвтэрнэ үү",
+            headers={"WWW-Authenticate": "Bearer"},
         )
 
     return patient
@@ -108,9 +113,12 @@ async def get_current_doctor(
     doctor = await DoctorRepository(db).get_by_id(doctor_id)
 
     if not doctor:
+        # Same reasoning as get_current_patient: stale token → 401 (not 404)
+        # so the admin frontend can auto-clear it and redirect to /login.
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Эмч олдсонгүй",
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Эмч олдсонгүй — дахин нэвтэрнэ үү",
+            headers={"WWW-Authenticate": "Bearer"},
         )
 
     return doctor

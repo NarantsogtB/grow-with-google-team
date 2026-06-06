@@ -115,10 +115,12 @@ export default function DoctorsPage() {
     setForm((f) => ({ ...f, [key]: value }));
 
   const emptyState = (
-    <div className="flex flex-col items-center justify-center py-16 text-slate-400">
+    <div className="flex flex-col items-center justify-center py-16 text-slate-400 px-6 text-center">
       <UserCog className="w-10 h-10 mb-3 opacity-40" />
-      <p className="text-sm font-medium">Эмч байхгүй байна</p>
-      <p className="text-xs mt-1">Эмч нэмэх эсвэл сервер эхлүүлэх</p>
+      <p className="text-sm font-medium text-slate-600">Бүртгэлтэй эмч алга байна</p>
+      <p className="text-xs mt-2 text-slate-500 max-w-sm">
+        Дээрх <b>Эмч нэмэх</b> товчоор шинэ эмч үүсгэх эсвэл super-admin самбараар бөөнөөр оруулна уу.
+      </p>
     </div>
   );
 

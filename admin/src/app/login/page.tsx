@@ -12,6 +12,7 @@ interface DoctorLoginResponse {
   first_name: string;
   last_name: string;
   role: string;
+  assigned_sector: string;
 }
 
 export default function LoginPage() {
@@ -41,6 +42,7 @@ export default function LoginPage() {
           first_name: data.first_name,
           last_name: data.last_name,
           role: data.role,
+          assigned_sector: data.assigned_sector,
         }),
       );
       router.push("/dashboard");

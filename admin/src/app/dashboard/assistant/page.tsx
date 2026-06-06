@@ -1,8 +1,9 @@
 "use client";
 
-import { FormEvent, useEffect, useRef, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { Bot, Send, Sparkles, User as UserIcon } from "lucide-react";
 import { api, ApiError } from "@/lib/api-client";
+import type { PaginatedResponse, PatientResponse } from "@/types";
 
 interface ChatResponse {
   response: string;
@@ -23,18 +24,50 @@ const INTENT_LABELS: Record<string, string> = {
   general: "Ерөнхий хариу",
 };
 
-const SUGGESTIONS = [
+const FALLBACK_PATIENT = "Өвчтөн";
+
+const buildSuggestions = (samplePatientName: string) => [
   "Өнөөдрийн оптимал маршрутыг харуул",
   "Маргааш ирэх өвчтнүүдийн жагсаалт",
   "BP 160/100, толгой өвдөнө, Enalapril бичье",
-  "Дорж Мөнхбаяр маргааш ирж чадахгүй гэлээ",
+  `${samplePatientName} маргааш ирж чадахгүй гэлээ`,
 ];
 
 export default function AssistantPage() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [samplePatient, setSamplePatient] = useState<string>(FALLBACK_PATIENT);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  const suggestions = useMemo(() => buildSuggestions(samplePatient), [samplePatient]);
+
+  // Pull a real patient name from the doctor's sector so the placeholder
+  // example matches data that actually exists in the DB.
+  useEffect(() => {
+    const raw = localStorage.getItem("admin_doctor");
+    let sector: string | undefined;
+    if (raw) {
+      try {
+        sector = JSON.parse(raw)?.assigned_sector;
+      } catch {
+        // ignore malformed
+      }
+    }
+    const path = sector
+      ? `/api/v1/patients/?sector=${encodeURIComponent(sector)}&size=1`
+      : `/api/v1/patients/?size=1`;
+    api
+      .get<PaginatedResponse<PatientResponse>>(path)
+      .then((res) => {
+        if (res.items[0]?.full_name) {
+          setSamplePatient(res.items[0].full_name);
+        }
+      })
+      .catch(() => {
+        // keep fallback — 401 will already be handled by the api client
+      });
+  }, []);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({
@@ -106,7 +139,7 @@ export default function AssistantPage() {
               Намайг өөрийн өдрийн хуваарь, маршрут эсвэл өвчтөний асуудлаар асуугаарай.
             </p>
             <div className="grid sm:grid-cols-2 gap-2 text-left">
-              {SUGGESTIONS.map((s) => (
+              {suggestions.map((s) => (
                 <button
                   key={s}
                   onClick={() => send(s)}

@@ -24,6 +24,7 @@ from app.api.v1.endpoints.hospitals import router as hospitals_router
 from app.api.v1.endpoints.notifications import router as notifications_router
 from app.api.v1.endpoints.patients import router as patients_router
 from app.api.v1.endpoints.schedules import router as schedules_router
+from app.api.v1.endpoints.system import router as system_router
 from app.api.v1.endpoints.telegram_webhook import router as telegram_router
 from app.api.v1.endpoints.visit_plans import router as visit_plans_router
 from fastapi import APIRouter
@@ -40,3 +41,4 @@ api_router.include_router(notifications_router)
 api_router.include_router(telegram_router)
 api_router.include_router(visit_plans_router)
 api_router.include_router(consultations_router)
+api_router.include_router(system_router)
