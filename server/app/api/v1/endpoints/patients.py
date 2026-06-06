@@ -8,7 +8,7 @@
 from typing import Optional
 from uuid import UUID
 
-from app.api.deps import CurrentPatient, Database
+from app.api.deps import CurrentDoctor, CurrentPatient, Database
 from app.schemas.common import PaginatedResponse
 from app.schemas.patient import (
     LoginRequest,
@@ -67,22 +67,19 @@ async def update_my_profile(data: PatientUpdate, db: Database, current_patient: 
 @router.get("/", response_model=PaginatedResponse[PatientResponse])
 async def list_patients(
     db: Database,
+    current_doctor: CurrentDoctor,
     page: int = Query(default=1, ge=1, description="Хуудасны дугаар"),
     size: int = Query(default=10, ge=1, le=100, description="Нэг хуудсанд харуулах тоо"),
-    sector: Optional[str] = Query(
-        default=None, description="Filter by sector (matches doctor.assigned_sector)"
-    ),
     q: Optional[str] = Query(default=None, description="Нэр эсвэл утасны дугаараар хайх"),
 ):
     from app.repositories.patient_repo import PatientRepository
 
     repo = PatientRepository(db)
+    sector = current_doctor.assigned_sector
     if q:
-        items, total = await repo.search(q=q, page=page, size=size)
-    elif sector:
-        items, total = await repo.get_by_sector(sector=sector, page=page, size=size)
+        items, total = await repo.search_in_sector(q=q, sector=sector, page=page, size=size)
     else:
-        items, total = await repo.get_all(page=page, size=size)
+        items, total = await repo.get_by_sector(sector=sector, page=page, size=size)
     return PaginatedResponse(items=items, total=total, page=page, size=size)
 
 
