@@ -18,10 +18,35 @@
 # Faker generates realistic test data so tests don't rely on hardcoded strings.
 # =============================================================================
 
+import uuid
+
 import pytest
+from app.core.security import create_access_token
+from app.models.doctor import Doctor
+from app.models.enums import DoctorRoleEnum, GenderEnum
 from faker import Faker
 
 fake = Faker()
+
+
+async def _doctor_auth_header(db_session) -> dict:
+    """Create a doctor in the test DB and return an Authorization header."""
+    doctor = Doctor(
+        id=uuid.uuid4(),
+        first_name="Тест",
+        last_name="Эмч",
+        gender=GenderEnum.MALE,
+        phone=f"9{str(uuid.uuid4().int)[:7]}",
+        email=f"doc_{uuid.uuid4().hex[:8]}@test.mn",
+        role=DoctorRoleEnum.GENERAL,
+        assigned_sector="14",
+        is_active=True,
+        is_available=True,
+    )
+    db_session.add(doctor)
+    await db_session.flush()
+    token = create_access_token(str(doctor.id))
+    return {"Authorization": f"Bearer {token}"}
 
 # ── TEST DATA FACTORY ──────────────────────────────────────────────────────────
 
@@ -189,13 +214,15 @@ class TestPatientLogin:
 class TestPatientList:
 
     @pytest.mark.asyncio
-    async def test_list_returns_paginated_structure(self, client):
+    async def test_list_returns_paginated_structure(self, client, db_session):
         """
         GET /patients must return a paginated response structure.
         The old bug was returning a raw list (unbounded query).
         The fix returns {items: [...], total: N, page: 1, size: 10}.
+        Requires doctor auth — endpoint now filters by doctor's assigned_sector.
         """
-        response = await client.get("/api/v1/patients/")
+        headers = await _doctor_auth_header(db_session)
+        response = await client.get("/api/v1/patients/", headers=headers)
         assert response.status_code == 200
 
         data = response.json()
@@ -205,13 +232,16 @@ class TestPatientList:
         assert "size" in data, "Response must have 'size' key"
 
     @pytest.mark.asyncio
-    async def test_list_respects_size_parameter(self, client):
+    async def test_list_respects_size_parameter(self, client, db_session):
         """GET /patients?size=2 must return at most 2 items per page."""
-        # Register 3 patients
+        headers = await _doctor_auth_header(db_session)
+        # Register 3 patients in the same sector as the doctor ("14")
         for _ in range(3):
-            await client.post("/api/v1/patients/", json=make_patient_payload())
+            payload = make_patient_payload()
+            payload["sector"] = "14"
+            await client.post("/api/v1/patients/", json=payload)
 
-        response = await client.get("/api/v1/patients/?page=1&size=2")
+        response = await client.get("/api/v1/patients/?page=1&size=2", headers=headers)
         data = response.json()
 
         assert len(data["items"]) <= 2, "size parameter must be respected"
