@@ -138,10 +138,12 @@ export default function HospitalsPage() {
             </tbody>
           </table>
         ) : hospitals.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-slate-400">
+          <div className="flex flex-col items-center justify-center py-16 text-slate-400 px-6 text-center">
             <Building2 className="w-10 h-10 mb-3 opacity-40" />
-            <p className="text-sm font-medium">No hospitals yet</p>
-            <p className="text-xs mt-1">Add a hospital or start the backend</p>
+            <p className="text-sm font-medium text-slate-600">Бүртгэлтэй эмнэлэг алга</p>
+            <p className="text-xs mt-2 text-slate-500 max-w-sm">
+              Дээрх <b>Эмнэлэг нэмэх</b> товчоор шинэ эмнэлэг үүсгэнэ үү. Үүний дараа эмч нар тэр эмнэлэгт харьяалагдаж бүртгүүлэх боломжтой болно.
+            </p>
           </div>
         ) : (
           <table className="w-full text-sm">

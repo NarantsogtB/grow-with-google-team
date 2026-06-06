@@ -143,7 +143,6 @@ patients_data = [
         "latitude": 47.9121,
         "longitude": 106.9012,
         "sector": "14",
-        "telegram_chat_id": "@munkh_dorj",
     },
     {
         "full_name": "Цэнд Оюунцэцэг",
@@ -171,7 +170,6 @@ patients_data = [
         "latitude": 47.9108,
         "longitude": 106.9035,
         "sector": "14",
-        "telegram_chat_id": "@ganbaatar_mend",
     },
     {
         "full_name": "Пүрэвдорж Наранцэцэг",
@@ -199,7 +197,6 @@ patients_data = [
         "latitude": 47.9155,
         "longitude": 106.8990,
         "sector": "14",
-        "telegram_chat_id": "@enkhjargal_s",
     },
     {
         "full_name": "Дамдинсүрэн Болормаа",
@@ -228,7 +225,6 @@ patients_data = [
         "latitude": 47.9195,
         "longitude": 106.8940,
         "sector": "12",
-        "telegram_chat_id": "@ariunaa_j",
     },
     {
         "full_name": "Гантулга Мандхай",
@@ -266,7 +262,6 @@ patients_data = [
         "latitude": 47.9060,
         "longitude": 106.9210,
         "sector": "8",
-        "telegram_chat_id": "@nomini_d",
     },
     {
         "full_name": "Хишигдэлгэр Уранцэцэг",

@@ -23,8 +23,16 @@ async def telegram_webhook(request: Request, db: Database):
         )
         return {"ok": True}
 
-    if text.startswith("/link "):
-        phone = text.split(" ", 1)[1].strip()
+    cmd_parts = text.split(maxsplit=1)
+    cmd = cmd_parts[0].lower()
+    if cmd == "/link" or cmd.startswith("/link@"):
+        phone = cmd_parts[1].strip() if len(cmd_parts) > 1 else ""
+        if not phone:
+            await send_telegram_message(
+                chat_id,
+                "Утасны дугаараа оруулна уу.\nЖишээ: /link 99112233",
+            )
+            return {"ok": True}
         patient = await PatientRepository(db).get_by_phone(phone)
         if not patient:
             await send_telegram_message(

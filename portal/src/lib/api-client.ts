@@ -18,6 +18,22 @@ function authHeaders(): Record<string, string> {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
+// Guard so a burst of 401s from concurrent requests only triggers one redirect.
+let redirecting = false;
+
+function handleUnauthorized() {
+  if (typeof window === "undefined") return;
+  if (redirecting) return;
+  redirecting = true;
+  // Drop the stale patient session — the backend no longer recognises its
+  // JWT subject (e.g. DB re-seeded after the token was issued).
+  localStorage.removeItem("patient_token");
+  localStorage.removeItem("patient_session");
+  if (!window.location.pathname.endsWith("/login")) {
+    window.location.assign("/login");
+  }
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {
     headers: { "Content-Type": "application/json", ...authHeaders() },
@@ -31,6 +47,9 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
       detail = body.detail ?? detail;
     } catch {
       // keep statusText
+    }
+    if (res.status === 401) {
+      handleUnauthorized();
     }
     throw new ApiError(res.status, detail);
   }
