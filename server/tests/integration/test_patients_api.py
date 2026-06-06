@@ -21,10 +21,11 @@
 import uuid
 
 import pytest
+from faker import Faker
+
 from app.core.security import create_access_token
 from app.models.doctor import Doctor
 from app.models.enums import DoctorRoleEnum, GenderEnum
-from faker import Faker
 
 fake = Faker()
 
@@ -47,6 +48,7 @@ async def _doctor_auth_header(db_session) -> dict:
     await db_session.flush()
     token = create_access_token(str(doctor.id))
     return {"Authorization": f"Bearer {token}"}
+
 
 # ── TEST DATA FACTORY ──────────────────────────────────────────────────────────
 

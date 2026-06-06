@@ -7,10 +7,11 @@
 
 from typing import List, Optional, Tuple
 
-from app.models.patient import Patient
-from app.repositories.base import BaseRepository
 from sqlalchemy import and_, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.models.patient import Patient
+from app.repositories.base import BaseRepository
 
 
 class PatientRepository(BaseRepository[Patient]):
@@ -86,7 +87,9 @@ class PatientRepository(BaseRepository[Patient]):
         rows = (await self.db.execute(select(Patient).where(Patient.id.in_(ids)))).scalars().all()
         return list(rows)
 
-    async def search_in_sector(self, q: str, sector: str, page: int, size: int) -> Tuple[List[Patient], int]:
+    async def search_in_sector(
+        self, q: str, sector: str, page: int, size: int
+    ) -> Tuple[List[Patient], int]:
         """Search patients by name or phone within a specific sector."""
         pattern = f"%{q}%"
         offset = (page - 1) * size
