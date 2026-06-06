@@ -20,38 +20,72 @@ jobs:
           username: ${{ secrets.VM_USERNAME }}
           key: ${{ secrets.VM_SSH_KEY }}
           script: |
+            set -euo pipefail
             export PATH="$HOME/.bun/bin:$PATH"
-            cd ~/grow-with-google-team
-            git pull origin main
 
-            # Server
+            cd ~/grow-with-google-team
+            echo "=== HEAD before sync ==="
+            git rev-parse --short HEAD
+
+            echo "=== Force-syncing main ==="
+            git fetch origin main
+            git reset --hard origin/main
+            git clean -fd
+
+            echo "=== HEAD after sync ==="
+            git rev-parse --short HEAD
+
+            # ── Server ──────────────────────────────────────────────────
             cd server
             mkdir -p logs
-            echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" > .env
-            echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
-            echo "ENV=${{ secrets.ENV }}" >> .env
-            echo "GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }}" >> .env
-            echo "DATABASE=${{ secrets.DATABASE_URL }}" >> .env
-            echo "WHAT3WORDS_API_KEY=${{ secrets.WHAT3WORDS_API_KEY }}" >> .env
-            echo "TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}" >> .env
+
+            # Rewrite .env in one shot from secrets so no manual edits stick
+            cat > .env <<EOF
+            DATABASE_URL=${{ secrets.DATABASE_URL }}
+            DATABASE=${{ secrets.DATABASE_URL }}
+            JWT_SECRET=${{ secrets.JWT_SECRET }}
+            ENV=${{ secrets.ENV }}
+            GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }}
+            WHAT3WORDS_API_KEY=${{ secrets.WHAT3WORDS_API_KEY }}
+            TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}
+            EOF
+
             source .venv/bin/activate
             pip install -r requirements.txt
             alembic upgrade head
-            pm2 restart familydoc-backend || pm2 start "source .venv/bin/activate && uvicorn app.main:app --host 0.0.0.0 --port 8000" --name familydoc-backend --error ./logs/server.log --output ./logs/uvicorn.log
+
+            pm2 restart familydoc-backend --update-env \
+              || pm2 start "source .venv/bin/activate && uvicorn app.main:app --host 0.0.0.0 --port 8000" \
+                 --name familydoc-backend \
+                 --error ./logs/server.log \
+                 --output ./logs/uvicorn.log
             pm2 save
             cd ..
 
-            # Admin
+            # ── Admin ───────────────────────────────────────────────────
             cd admin
             bun install
             bun run build
-            pm2 restart admin || pm2 start "bun run start -- --port 3000" --name admin
+            pm2 restart admin --update-env || pm2 start "bun run start -- --port 3000" --name admin
             pm2 save
             cd ..
 
-            # Portal
+            # ── Portal ──────────────────────────────────────────────────
             cd portal
             bun install
             bun run build
-            pm2 restart portal || pm2 start "bun run start -- --port 3002" --name portal
+            pm2 restart portal --update-env || pm2 start "bun run start -- --port 3002" --name portal
             pm2 save
+            cd ..
+
+            # ── Verification ───────────────────────────────────────────
+            sleep 3
+            echo "=== Post-deploy verification ==="
+            STATUS_JSON=$(curl -sS http://localhost:8000/api/v1/system/status)
+            echo "$STATUS_JSON"
+            DB_OK=$(echo "$STATUS_JSON" | python3 -c "import json,sys; print(json.load(sys.stdin).get('db'))")
+            if [ "$DB_OK" != "ok" ]; then
+              echo "❌ Backend reachable but DB check failed (db=$DB_OK)"
+              exit 1
+            fi
+            echo "✅ Deploy verified — backend reachable, DB ok"
