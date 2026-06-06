@@ -12,8 +12,25 @@ logger = logging.getLogger(__name__)
 _UB = timezone(timedelta(hours=8))
 
 
+def _format_visit_date(d: DateType) -> str:
+    """Render a visit date for an outbound Telegram message.
+
+    Returns 'Өнөөдөр' / 'Маргааш' when the date is literally today/tomorrow
+    in Ulaanbaatar; otherwise renders as 'X-р сарын Y-нд' so the patient
+    sees the real date when the admin scheduled a confirmation for 2+ days
+    out.
+    """
+    today = datetime.now(_UB).date()
+    if d == today:
+        return "Өнөөдөр"
+    if d == today + timedelta(days=1):
+        return "Маргааш"
+    return f"{d.month}-р сарын {d.day}-нд"
+
+
 async def send_day_before_confirmations(db: AsyncSession, visit_date: DateType) -> dict:
     plans = await DailyVisitPlanRepository(db).get_by_date(visit_date)
+    when_str = _format_visit_date(visit_date)
     sent = 0
     for plan in plans:
         if plan.status != "pending":
@@ -24,7 +41,7 @@ async def send_day_before_confirmations(db: AsyncSession, visit_date: DateType) 
         time_str = plan.estimated_time.strftime("%H:%M") if plan.estimated_time else "?"
         msg = (
             f"Сайн байна уу, {patient.full_name}!\n"
-            f"Маргааш {time_str}-д эмч таны гэрт очих болно.\n"
+            f"{when_str} {time_str}-д эмч таны гэрт очих болно.\n"
             f"Та гэртээ байх боломжтой юу?\n"
             f"✅ Байна  ❌ Байхгүй гэж хариулна уу."
         )
@@ -40,16 +57,17 @@ async def handle_patient_reply(db: AsyncSession, chat_id: str, text: str) -> str
     if not patient:
         return "Уучлаарай, таны мэдээлэл олдсонгүй."
 
-    tomorrow = (datetime.now(_UB) + timedelta(days=1)).date()
+    today = datetime.now(_UB).date()
     repo = DailyVisitPlanRepository(db)
-    plan = await repo.get_pending_for_patient(str(patient.id), tomorrow)
+    plan = await repo.get_earliest_pending_for_patient(str(patient.id), today)
     if not plan:
-        return "Маргаашийн цаг товлолт олдсонгүй."
+        return "Танд хүлээгдэж буй цаг товлолт олдсонгүй."
 
     intent = _parse_intent(text)
     if intent == "yes":
         await repo.update_status(plan.id, "confirmed")
-        return "Баярлалаа! Баталгаажлаа. ✅"
+        when_str = _format_visit_date(plan.date)
+        return f"Баярлалаа! {when_str}-ний цагийг баталгаажуулав. ✅"
     elif intent == "no":
         await repo.update_status(plan.id, "declined")
         await _recalculate_route(db, plan.date, str(plan.doctor_id))
