@@ -2,7 +2,7 @@ from datetime import date, time
 from typing import List, Optional
 from uuid import UUID
 
-from app.api.deps import Database
+from app.api.deps import CurrentDoctor, Database
 from app.models.daily_visit_plan import DailyVisitPlan
 from app.repositories.daily_visit_plan_repo import DailyVisitPlanRepository
 from app.repositories.patient_repo import PatientRepository
@@ -14,7 +14,7 @@ router = APIRouter(prefix="/visit-plans", tags=["Visit Plans"])
 
 class VisitPlanCreate(BaseModel):
     date: date
-    doctor_id: UUID
+    doctor_id: UUID  # kept for backward compat; backend overrides with current_doctor.id
     patient_id: UUID
     visit_order: int
     estimated_time: Optional[time] = None
@@ -67,10 +67,18 @@ async def _enrich(plan: DailyVisitPlan, db) -> dict:
 
 
 @router.post("/", response_model=VisitPlanResponse)
-async def create_visit_plan(body: VisitPlanCreate, db: Database):
+async def create_visit_plan(
+    body: VisitPlanCreate,
+    current_doctor: CurrentDoctor,
+    db: Database,
+):
+    """Add a patient to the authenticated doctor's plan for a given date."""
+    # Always use the authenticated doctor — body.doctor_id is ignored.
+    # This prevents Dr. A from accidentally (or maliciously) creating a plan
+    # entry under Dr. B's name.
     plan = DailyVisitPlan(
         date=body.date,
-        doctor_id=body.doctor_id,
+        doctor_id=current_doctor.id,
         patient_id=body.patient_id,
         visit_order=body.visit_order,
         estimated_time=body.estimated_time,
@@ -80,16 +88,27 @@ async def create_visit_plan(body: VisitPlanCreate, db: Database):
 
 
 @router.get("/{visit_date}", response_model=List[VisitPlanResponse])
-async def list_visit_plans(visit_date: date, db: Database):
-    plans = await DailyVisitPlanRepository(db).get_by_date(visit_date)
+async def list_visit_plans(
+    visit_date: date,
+    current_doctor: CurrentDoctor,
+    db: Database,
+):
+    """List THIS doctor's planned visits for a date (not every doctor's)."""
+    plans = await DailyVisitPlanRepository(db).get_by_date_and_doctor(visit_date, current_doctor.id)
     return [await _enrich(p, db) for p in plans]
 
 
 @router.delete("/{plan_id}")
-async def delete_visit_plan(plan_id: UUID, db: Database):
+async def delete_visit_plan(
+    plan_id: UUID,
+    current_doctor: CurrentDoctor,
+    db: Database,
+):
     repo = DailyVisitPlanRepository(db)
     plan = await repo.get_by_id(plan_id)
     if not plan:
         raise HTTPException(404, "Төлөвлөгөө олдсонгүй")
+    if str(plan.doctor_id) != str(current_doctor.id):
+        raise HTTPException(403, "Энэ төлөвлөгөөг өөрчлөх эрхгүй")
     await repo.delete(plan)
     return {"ok": True}
